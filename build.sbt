@@ -43,7 +43,8 @@ mainClass in (Compile, run) := Some("name.kaeding.fibs.Main")
 
 /* dependencies */
 libraryDependencies ++= Seq (
-  "org.scalaz" %% "scalaz-core" % "7.0.0-M3"
+  "org.scalaz" %% "scalaz-core" % "7.0.0-M4",
+  "org.scalaz" %% "scalaz-concurrent" % "7.0.0-M4"
   // "org.scalaz" %% "scalaz-effect" % "7.0.0-M3",
   // "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
 )

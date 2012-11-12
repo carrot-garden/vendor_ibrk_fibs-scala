@@ -1,9 +1,14 @@
 package name.kaeding.fibs
-package ib.impl
+package ib
+package impl
 
-import com.ib.client._
+import com.ib.client.{Order => IBOrder, _}
+import scalaz._, Scalaz._
+import scalaz.concurrent._
+import messages._
+import name.kaeding.fibs.ib.messages.IBMessage
 
-class EWrapperImpl extends EWrapper {
+sealed case class EWrapperImpl(ibActor: Actor[FibsPromise[_] \/ IBMessage])  extends EWrapper {
 
   def tickPrice(tickerId: Int, field: Int, price: Double, canAutoExecute: Int): Unit = ???
 
@@ -19,7 +24,7 @@ class EWrapperImpl extends EWrapper {
 
   def orderStatus(orderId: Int, status: String, filled: Int, remaining: Int, avgFillPrice: Double, permId: Int, parentId: Int, lastFillPrice: Double, clientId: Int, whyHeld: String): Unit = ???
 
-  def openOrder(orderId: Int, contract: Contract, order: Order, orderState: OrderState): Unit = ???
+  def openOrder(orderId: Int, contract: Contract, order: IBOrder, orderState: OrderState): Unit = ???
 
   def openOrderEnd(): Unit = ???
 
@@ -31,7 +36,7 @@ class EWrapperImpl extends EWrapper {
 
   def accountDownloadEnd(accountName: String): Unit = ???
 
-  def nextValidId(orderId: Int): Unit = ???
+  def nextValidId(orderId: Int): Unit = ibActor ! NextValidId(orderId).right
 
   def contractDetails(reqId: Int, contractDetails: ContractDetails): Unit = ???
 
@@ -49,7 +54,7 @@ class EWrapperImpl extends EWrapper {
 
   def updateNewsBulletin(msgId: Int, msgType: Int, message: String, origExchange: String): Unit = ???
 
-  def managedAccounts(accountsList: String): Unit = ???
+  def managedAccounts(accountsList: String): Unit = ibActor ! ManagedAccounts(accountsList).right
 
   def receiveFA(faDataType: Int, xml: String): Unit = ???
 
@@ -75,12 +80,17 @@ class EWrapperImpl extends EWrapper {
 
   def commissionReport(commissionReport: CommissionReport): Unit = ???
 
-  def error(e: Exception): Unit = ???
+  def error(e: Exception): Unit = throw e // ???
 
-  def error(str: String): Unit = ???
+  def error(str: String): Unit = throw UnknownIBError(-1, -1, str)
 
-  def error(id: Int, errorCode: Int, errorMsg: String): Unit = ???
+  def error(id: Int, errorCode: Int, errorMsg: String): Unit = errorCode match {
+    case c if (2100 until 2110).contains(c) => ibActor ! WarningMessage(errorCode, errorMsg).right
+    case _ => throw new UnknownIBError(id, errorCode, errorMsg)
+  }
 
   def connectionClosed(): Unit = ???
 
 }
+
+case class UnknownIBError(id: Int, errorCode: Int, errorMsg: String) extends Exception

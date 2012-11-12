@@ -14,11 +14,7 @@ trait IB {
 
 	def isConnected(): Boolean
 
-	def eConnect(host: String, port: Int, clientId: Int)
-
 	def eConnect(socket: Socket, clientId: Int)
-
-	def eDisconnect()
 
 	def cancelScannerSubscription(tickerId: Int)
 
