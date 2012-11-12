@@ -85,7 +85,7 @@ class IBImpl(host: String, port: Int) extends IB {
         }
         val inputs = List(accHandler, nextIdHandler)
         def get = ((accounts.map(_.accounts) |@|
-        		  nextId.map(_.nextId))(ConnectionResult.apply)).get
+          nextId.map(_.nextId))(ConnectionResult.apply)).get
       }
 
       actor ! handler.left
@@ -94,7 +94,6 @@ class IBImpl(host: String, port: Int) extends IB {
     } else {
       none
     }
-
   }
 
   def disconnect() {
@@ -166,7 +165,23 @@ class IBImpl(host: String, port: Int) extends IB {
 
   def replaceFA(faDataType: Int, xml: String): Unit = {}
 
-  def reqCurrentTime(): Unit = {}
+  def currentTime(): Promise[Long] = {
+    val handler = new FibsPromise[Long] {
+      var time: Option[Long] = none
+      val timeHandler: PartialFunction[IBMessage, Unit] = {
+        case t: CurrentTime => {
+          time = t.time.some
+          latch.countDown
+        }
+      }
+      val inputs = List(timeHandler)
+      def get = time.get
+    }
+
+    actor ! handler.left
+    clientSocket.reqCurrentTime()
+    handler.promise
+  }
 
   def reqFundamentalData(reqId: Int, contract: Contract, reportType: String): Unit = {}
 

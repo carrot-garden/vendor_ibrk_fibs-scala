@@ -7,6 +7,9 @@ import com.ib.client.ExecutionFilter
 import com.ib.client.Order
 import com.ib.client.ScannerSubscription
 
+import scalaz._, Scalaz._
+import scalaz.concurrent._
+
 trait IB {
 	def serverVersion(): Int
 
@@ -78,7 +81,7 @@ trait IB {
 
 	def replaceFA(faDataType: Int, xml: String)
 
-	def reqCurrentTime()
+	def currentTime(): Promise[Long]
 
 	def reqFundamentalData(reqId: Int, contract: Contract,
 			reportType: String)
