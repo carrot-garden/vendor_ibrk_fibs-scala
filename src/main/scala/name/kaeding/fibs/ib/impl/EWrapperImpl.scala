@@ -10,13 +10,21 @@ import name.kaeding.fibs.ib.messages.IBMessage
 
 sealed case class EWrapperImpl(ibActor: Actor[FibsPromise[_] \/ IBMessage])  extends EWrapper {
 
-  def tickPrice(tickerId: Int, field: Int, price: Double, canAutoExecute: Int): Unit = ???
+  def tickPrice(tickerId: Int, field: Int, price: Double, canAutoExecute: Int): Unit = 
+    ibActor ! TickPrice(tickerId, TickField.read(field), price, canAutoExecute).right
 
-  def tickSize(tickerId: Int, field: Int, size: Int): Unit = ???
+  def tickSize(tickerId: Int, field: Int, size: Int): Unit = 
+    ibActor ! TickSize(tickerId, TickField.read(field), size).right
 
-  def tickOptionComputation(tickerId: Int, field: Int, impliedVol: Double, delta: Double, optPrice: Double, pvDividend: Double, gamma: Double, vega: Double, theta: Double, undPrice: Double): Unit = ???
+  def tickOptionComputation(
+      tickerId: Int, field: Int, impliedVol: Double, delta: Double, 
+      optPrice: Double, pvDividend: Double, gamma: Double, vega: Double, 
+      theta: Double, undPrice: Double): Unit = 
+        ibActor ! TickOptionComputation(tickerId, TickField.read(field), impliedVol, 
+            delta, optPrice, pvDividend, gamma, vega, theta, undPrice).right
 
-  def tickGeneric(tickerId: Int, tickType: Int, value: Double): Unit = ???
+  def tickGeneric(tickerId: Int, tickType: Int, value: Double): Unit = 
+    ibActor ! TickGeneric(tickerId, tickType, value).right
 
   def tickString(tickerId: Int, tickType: Int, value: String): Unit = ???
 
@@ -86,7 +94,7 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromise[_] \/ IBMessage])  ext
 
   def error(id: Int, errorCode: Int, errorMsg: String): Unit = errorCode match {
     case c if (2100 until 2110).contains(c) => ibActor ! WarningMessage(errorCode, errorMsg).right
-    case _ => throw new UnknownIBError(id, errorCode, errorMsg)
+    case _ => println(new UnknownIBError(id, errorCode, errorMsg))
   }
 
   def connectionClosed(): Unit = ???

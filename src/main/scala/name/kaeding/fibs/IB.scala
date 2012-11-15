@@ -10,6 +10,9 @@ import com.ib.client.ScannerSubscription
 import scalaz._, Scalaz._
 import scalaz.concurrent._
 
+import contract._
+import ib.messages._
+
 trait IB {
 	def serverVersion(): Int
 
@@ -26,8 +29,10 @@ trait IB {
 	def reqScannerSubscription(tickerId: Int,
 			subscription: ScannerSubscription)
 
-	def reqMktData(tickerId: Int, contract: Contract,
-			genericTickList: String, snapshot: Boolean)
+	def reqMktData(
+	    security: Stock, // Security,
+		genericTickList: String, 
+		snapshot: Boolean): Promise[MarketDataResult]
 
 	def cancelHistoricalData(tickerId: Int)
 

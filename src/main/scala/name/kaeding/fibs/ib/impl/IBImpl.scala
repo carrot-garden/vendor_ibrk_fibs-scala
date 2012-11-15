@@ -17,6 +17,8 @@ import com.ib.client.EClientSocket
 
 import name.kaeding.fibs.IB
 import messages._
+import contract._
+import Contract._
 
 object IBActor {
   private[this] class IBActorState {
@@ -117,7 +119,55 @@ class IBImpl(host: String, port: Int) extends IB {
 
   def reqScannerSubscription(tickerId: Int, subscription: ScannerSubscription): Unit = {}
 
-  def reqMktData(tickerId: Int, contract: Contract, genericTickList: String, snapshot: Boolean): Unit = {}
+  def reqMktData(
+      security: Stock, // Security
+      genericTickList: String, 
+      snapshot: Boolean): Promise[MarketDataResult] = {
+    val tickerId = IDGenerator.next
+    val handler = new FibsPromise[MarketDataResult] {
+      var bidPrice: Option[Double] = none 
+      var bidSize: Option[Int] = none 
+      var askPrice: Option[Double] = none 
+      var askSize: Option[Int] = none
+      val bidPriceHandler: PartialFunction[IBMessage, Unit] = {
+        case TickPrice(tickerId, TickBid, p, _) => {
+          bidPrice = p.some
+          latch.countDown
+        }
+      }
+      val askPriceHandler: PartialFunction[IBMessage, Unit] = {
+        case TickPrice(tickerId, TickAsk, p, _) => {
+          askPrice = p.some
+          latch.countDown
+        }
+      }
+      val bidSizeHandler: PartialFunction[IBMessage, Unit] = {
+        case TickSize(tickerId, TickBidSize, v) => {
+          bidSize = v.some
+          latch.countDown
+        }
+      }
+      val askSizeHandler: PartialFunction[IBMessage, Unit] = {
+        case TickSize(tickerId, TickAskSize, v) => {
+          askSize = v.some
+          latch.countDown
+        }
+      }
+      val inputs = List(bidPriceHandler, askPriceHandler, bidSizeHandler, askSizeHandler)
+      def get = (bidPrice |@| 
+    		  	 bidSize |@| 
+    		  	 askPrice |@| 
+    		  	 askSize)(MarketDataResult(security.symbol, _, _, _, _)).get
+    }
+
+    actor ! handler.left
+    clientSocket.reqMktData(
+        tickerId, 
+        security.contract(0),//IDGenerator.next), 
+        genericTickList, 
+        snapshot)
+    handler.promise
+  }
 
   def cancelHistoricalData(tickerId: Int): Unit = {}
 
@@ -205,5 +255,3 @@ private[impl] object IDGenerator {
   private[this] val counter = new AtomicInteger()
   def next = counter.getAndIncrement
 }
-
-sealed case class ConnectionResult(managedAccounts: String, nextValidId: Int)
