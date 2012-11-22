@@ -36,7 +36,7 @@ object IBActor {
     }
     Actor[FibsPromiseMessage \/ IBMessage](_.toEither match {
       case Left(RegisterFibsPromise(p)) => state.handlers = p :: state.handlers
-      case Left(UnregisterFibsPromise(p)) => state.handlers.filterNot(_ == p)
+      case Left(UnregisterFibsPromise(p)) => state.handlers = state.handlers.filterNot(_ == p)
       case Right(m) => 
         state.handlers.find(_.patterns.any(_.isDefinedAt(m))).fold(some = _ ! m, none = defaultHandler(m))
     })
@@ -124,7 +124,7 @@ class IBImpl(host: String, port: Int) extends IB {
       genericTickList: String, 
       snapshot: Boolean): Promise[MarketDataResult] = {
     val tickerId = IDGenerator.next
-    val handler = new ReqMarketDataHandler(security, ibActor)
+    val handler = new ReqMarketDataHandler(security, ibActor, tickerId)
 
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
@@ -140,23 +140,27 @@ class IBImpl(host: String, port: Int) extends IB {
   def cancelRealTimeBars(tickerId: Int): Unit = {}
 
   def reqHistoricalData(
-      contract: Stock, // Security 
+      security: Stock, // Security 
       endDateTime: DateTime, 
       duration: Period, 
       barSize: BarSize, 
       whatToShow: ShowMe, 
-      useRTH: Boolean): Unit = {
+      useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]] = {
     val tickerId = IDGenerator.next
+    val handler = new ReqHistoricalDataHandler(security, ibActor, tickerId)
+    ibActor ! RegisterFibsPromise(handler).left
+
     val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss z")
     clientSocket.reqHistoricalData(
         tickerId, 
-        contract.contract(0), 
+        security.contract(0), 
         fmt.print(endDateTime), 
         duration.shows, 
         barSize.shows, 
         whatToShow.shows, 
         useRTH ? 1 | 0, 
         2)
+    handler.promise
   }
 
   def reqRealTimeBars(tickerId: Int, contract: Contract, barSize: Int, whatToShow: String, useRTH: Boolean): Unit = {}
@@ -209,7 +213,6 @@ class IBImpl(host: String, port: Int) extends IB {
           latch.countDown
           if (latch.getCount() === 0) ibActor ! UnregisterFibsPromise(this).left
         }
-        case m => println("got %s" format m)
       }
       val patterns = List(timeHandler)
       val actor = Actor[IBMessage](timeHandler)

@@ -12,7 +12,9 @@ import messages._
 import contract._
 
 class ReqMarketDataHandler(security: Stock/*Security*/, 
-		ibActor: Actor[FibsPromiseMessage \/ IBMessage]) extends FibsPromise[MarketDataResult] {
+		ibActor: Actor[FibsPromiseMessage \/ IBMessage],
+		tickerId: Int) extends FibsPromise[MarketDataResult] {
+	  private[this] val TickerId = tickerId
       var bidPrice: Option[Double] = none 
       var bidSize: Option[Int] = none 
       var askPrice: Option[Double] = none 
@@ -27,19 +29,19 @@ class ReqMarketDataHandler(security: Stock/*Security*/,
       var close: Option[Double] = none
       var open: Option[Double] = none
       val actor = Actor[IBMessage]{
-        case TickPrice(tickerId, TickBid, p, _) => bidPrice = p.some
-        case TickSize(tickerId, TickBidSize, v) => bidSize = v.some
-        case TickPrice(tickerId, TickAsk, p, _) => askPrice = p.some
-        case TickSize(tickerId, TickAskSize, v) => askSize = v.some
-        case TickPrice(tickerId, TickLast, p, _) => lastPrice = p.some
-        case TickSize(tickerId, TickLastSize, v) => lastSize = v.some
-        case TickString(tickerId, TickLastTimestamp, v) => timestamp = v.parseLong.toOption
-        case TickPrice(tickerId, TickHigh, p, _) => high = p.some
-        case TickPrice(tickerId, TickLow, p, _) => close = p.some
-        case TickPrice(tickerId, TickClose, p, _) => close = p.some
-        case TickPrice(tickerId, TickOpen, p, _) => open = p.some
-        case TickSize(tickerId, TickVolume, v) => volume = v.some
-        case TickGeneric(tickerId, TickHalted, v) => {
+        case TickPrice(TickerId, TickBid, p, _) => bidPrice = p.some
+        case TickSize(TickerId, TickBidSize, v) => bidSize = v.some
+        case TickPrice(TickerId, TickAsk, p, _) => askPrice = p.some
+        case TickSize(TickerId, TickAskSize, v) => askSize = v.some
+        case TickPrice(TickerId, TickLast, p, _) => lastPrice = p.some
+        case TickSize(TickerId, TickLastSize, v) => lastSize = v.some
+        case TickString(TickerId, TickLastTimestamp, v) => timestamp = v.parseLong.toOption
+        case TickPrice(TickerId, TickHigh, p, _) => high = p.some
+        case TickPrice(TickerId, TickLow, p, _) => close = p.some
+        case TickPrice(TickerId, TickClose, p, _) => close = p.some
+        case TickPrice(TickerId, TickOpen, p, _) => open = p.some
+        case TickSize(TickerId, TickVolume, v) => volume = v.some
+        case TickGeneric(TickerId, TickHalted, v) => {
           v match {
             case 1 => halted = true.some
             case 0 => halted = false.some

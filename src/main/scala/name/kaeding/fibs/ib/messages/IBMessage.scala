@@ -156,4 +156,3 @@ sealed case class HistoricalDataPeriod(
     volume: Int,
     wap: Double,
     hasGaps: Boolean)
-sealed case class HistoricalDataResult(periods: Seq[HistoricalDataPeriod])

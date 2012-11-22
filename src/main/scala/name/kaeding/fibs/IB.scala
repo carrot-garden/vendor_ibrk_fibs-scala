@@ -45,7 +45,7 @@ trait IB {
 		durationStr: Period, 
 		barSize: BarSize,
 		whatToShow: ShowMe, 
-		useRTH: Boolean)
+		useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]]
 
 	def reqRealTimeBars(tickerId: Int, contract: Contract,
 			barSize: Int, whatToShow: String, useRTH: Boolean)

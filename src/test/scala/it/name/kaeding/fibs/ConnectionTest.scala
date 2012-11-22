@@ -19,7 +19,9 @@ object ConnectionTest extends App {
     println("currentTime: %d" format currentTime.get)
     val aapl = ib.reqMktData(Stock("AAPL"), "", true)
     println("aapl: %s" format aapl.get)
-    ib.reqHistoricalData(Stock("AAPL"), DateTime.now, 1.day, BarSize3Min, ShowMeTrades, true)
+    val hist = ib.reqHistoricalData(Stock("AAPL"), DateTime.now, 1.day, BarSize3Min, ShowMeTrades, true)
+    println("sent historical data request")
+    println("Historical AAPL: %s" format hist.get.toList)
     Thread.sleep(3000)
   } finally {
     ib.disconnect()
