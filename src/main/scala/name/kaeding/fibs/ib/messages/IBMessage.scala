@@ -1,6 +1,8 @@
 package name.kaeding.fibs
 package ib.messages
 
+import scalaz._, Scalaz._
+
 sealed trait IBMessage 
 sealed case class ManagedAccounts(accounts: String) extends IBMessage
 sealed case class NextValidId(nextId: Int) extends IBMessage
@@ -11,6 +13,9 @@ sealed case class TickGeneric(tickerId: Int, tickType: TickField, value: Double)
 sealed case class TickOptionComputation(tickerId: Int, field: TickField, impliedVol: Double, delta: Double, optPrice: Double, pvDividend: Double, gamma: Double, vega: Double, theta: Double, undPrice: Double) extends IBMessage
 sealed case class TickString(tickerId: Int, tickType: TickField, value: String) extends IBMessage
 sealed case class TickSnapshotEnd(reqId: Int) extends IBMessage
+sealed case class HistoricalData(reqId: Int, date: String, open: Double, high: Double, 
+      low: Double, close: Double, volume: Int, count: Int, wap: Double, 
+      hasGaps: Boolean) extends IBMessage
 
 sealed trait ErrorCodes extends IBMessage
 sealed case class WarningMessage(errorCode: Int, errorMessage: String) extends ErrorCodes
@@ -68,7 +73,63 @@ object TickOpen extends TickField
 object TickLastTimestamp extends TickField
 object TickHalted extends TickField
 
+sealed trait BarSize
+object BarSize {
+  implicit def barSizeShows = new Show[BarSize] {
+    override def shows(s: BarSize) = s match {
+      case BarSize1Sec => "1 sec"
+      case BarSize5Sec => "5 secs"
+      case BarSize15Sec => "15 secs"
+      case BarSize30Sec => "30 secs"
+      case BarSize1Min => "1 mins"
+      case BarSize2Min => "2 mins"
+      case BarSize3Min => "3 mins"
+      case BarSize5Min => "5 mins"
+      case BarSize15Min => "15 mins"
+      case BarSize30Min => "30 mins"
+      case BarSize1Hour => "1 hour"
+      case BarSize1Day => "1 day"
+    }
+  }
+}
+object BarSize1Sec extends BarSize
+object BarSize5Sec extends BarSize
+object BarSize15Sec extends BarSize
+object BarSize30Sec extends BarSize
+object BarSize1Min extends BarSize
+object BarSize2Min extends BarSize
+object BarSize3Min extends BarSize
+object BarSize5Min extends BarSize
+object BarSize15Min extends BarSize
+object BarSize30Min extends BarSize
+object BarSize1Hour extends BarSize
+object BarSize1Day extends BarSize
+
+sealed trait ShowMe
+object ShowMe {
+  implicit def showMeShows = new Show[ShowMe] {
+    override def shows(s: ShowMe) = s match {
+      case ShowMeTrades => "TRADES"
+      case ShowMeMidpoint => "MIDPOINT"
+      case ShowMeBid => "BID"
+      case ShowMeAsk => "ASK"
+      case ShowMeBidAsk => "BID_ASK"
+      case ShowMeHistoricalVolatility => "HISTORICAL_VOLATILITY"
+      case ShowMeOptionImpliedVolatility => "OPTION_IMPLIED_VOLATILITY"
+    }
+  }
+}
+object ShowMeTrades extends ShowMe
+object ShowMeMidpoint extends ShowMe
+object ShowMeBid extends ShowMe
+object ShowMeAsk extends ShowMe
+object ShowMeBidAsk extends ShowMe
+object ShowMeHistoricalVolatility extends ShowMe
+object ShowMeOptionImpliedVolatility extends ShowMe
+
 // Responses
+
+import org.scala_tools.time.Imports._
 
 sealed case class ConnectionResult(managedAccounts: String, nextValidId: Int)
 sealed case class MarketDataResult(
@@ -86,3 +147,13 @@ sealed case class MarketDataResult(
     volume: Option[Int],
     timestamp: Option[Long],
     halted: Option[Boolean])
+sealed case class HistoricalDataPeriod(
+    time: DateTime,
+    open: Double,
+    high: Double,
+    low: Double,
+    close: Double,
+    volume: Int,
+    wap: Double,
+    hasGaps: Boolean)
+sealed case class HistoricalDataResult(periods: Seq[HistoricalDataPeriod])

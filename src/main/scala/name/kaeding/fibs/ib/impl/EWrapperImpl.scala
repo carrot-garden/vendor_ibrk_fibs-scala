@@ -8,7 +8,7 @@ import scalaz.concurrent._
 import messages._
 import name.kaeding.fibs.ib.messages.IBMessage
 
-sealed case class EWrapperImpl(ibActor: Actor[FibsPromise[_] \/ IBMessage])  extends EWrapper {
+sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage])  extends EWrapper {
 
   def tickPrice(tickerId: Int, field: Int, price: Double, canAutoExecute: Int): Unit = 
     ibActor ! TickPrice(tickerId, TickField.read(field), price, canAutoExecute).right
@@ -67,7 +67,10 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromise[_] \/ IBMessage])  ext
 
   def receiveFA(faDataType: Int, xml: String): Unit = ???
 
-  def historicalData(reqId: Int, date: String, open: Double, high: Double, low: Double, close: Double, volume: Int, count: Int, WAP: Double, hasGaps: Boolean): Unit = ???
+  def historicalData(reqId: Int, date: String, open: Double, high: Double, 
+      low: Double, close: Double, volume: Int, count: Int, WAP: Double, 
+      hasGaps: Boolean): Unit = 
+        ibActor ! HistoricalData(reqId, date, open, high, low, close, volume, count, WAP, hasGaps).right
 
   def scannerParameters(xml: String): Unit = ???
 

@@ -4,6 +4,7 @@ package impl
 
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.CountDownLatch
 import scala.collection.mutable.MutableList
 import scalaz._, Scalaz._
 import scalaz.concurrent._
@@ -12,16 +13,17 @@ import com.ib.client.ExecutionFilter
 import com.ib.client.Order
 import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
+import org.scala_tools.time.Imports._
+
 import name.kaeding.fibs.IB
 import messages._
 import contract._
 import handlers._
 import Contract._
-import java.util.concurrent.CountDownLatch
 
 object IBActor {
   private[this] class IBActorState {
-    var handlers: List[IBMessageHandler] = Nil
+    var handlers: List[FibsPromise[_]] = Nil
     val unhandledMessages: MutableList[IBMessage] = MutableList[IBMessage]()
   }
 
@@ -32,36 +34,33 @@ object IBActor {
       println("Got unhandled message: %s" format msg)
       state.unhandledMessages.+=(msg)
     }
-    Actor[FibsPromise[_] \/ IBMessage](_.toEither match {
-      case Left(h) => state.handlers = h.inputs ::: state.handlers
-      case Right(m) => {
-        val (thisOne, rest) = state.handlers.partition(_.isDefinedAt(m))
-        thisOne.headOption.map(h => {
-          h(m)
-          val others = thisOne.tail
-          if (others.isEmpty)
-            state.handlers = rest
-          else
-            state.handlers = others ++ rest
-        }).getOrElse(defaultHandler(m))
-      }
+    Actor[FibsPromiseMessage \/ IBMessage](_.toEither match {
+      case Left(RegisterFibsPromise(p)) => state.handlers = p :: state.handlers
+      case Left(UnregisterFibsPromise(p)) => state.handlers.filterNot(_ == p)
+      case Right(m) => 
+        state.handlers.find(_.patterns.any(_.isDefinedAt(m))).fold(some = _ ! m, none = defaultHandler(m))
     })
   }
 }
 abstract class FibsPromise[A] {
-  val inputs: List[PartialFunction[IBMessage, Unit]]
-  lazy val latch = new CountDownLatch(inputs.length)
+  val patterns: List[PartialFunction[IBMessage, Unit]]
+  val actor: Actor[IBMessage]
+  val latch: CountDownLatch
   def get: A
+  def !(m: IBMessage) = actor ! m
   def promise = Promise {
     latch.await()
     get
   }
 }
+sealed trait FibsPromiseMessage
+case class RegisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
+case class UnregisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
 
 class IBImpl(host: String, port: Int) extends IB {
   val clientId = IDGenerator.next
-  val actor = IBActor()
-  val ewrapper = new EWrapperImpl(actor)
+  val ibActor = IBActor()
+  val ewrapper = new EWrapperImpl(ibActor)
   val clientSocket = new EClientSocket(ewrapper)
   implicit val s = Strategy.DefaultExecutorService
 
@@ -70,24 +69,28 @@ class IBImpl(host: String, port: Int) extends IB {
       val handler = new FibsPromise[ConnectionResult] {
         var accounts: Option[ManagedAccounts] = none
         var nextId: Option[NextValidId] = none
+        val latch = new CountDownLatch(2)
         val accHandler: PartialFunction[IBMessage, Unit] = {
           case ma: ManagedAccounts => {
             accounts = ma.some
             latch.countDown
+            if (latch.getCount() === 0) ibActor ! UnregisterFibsPromise(this).left
           }
         }
         val nextIdHandler: PartialFunction[IBMessage, Unit] = {
           case v: NextValidId => {
             nextId = v.some
             latch.countDown
+            if (latch.getCount() === 0) ibActor ! UnregisterFibsPromise(this).left
           }
         }
-        val inputs = List(accHandler, nextIdHandler)
+        val patterns = List(accHandler, nextIdHandler)
+        val actor = Actor[IBMessage](accHandler.orElse(nextIdHandler))
         def get = ((accounts.map(_.accounts) |@|
           nextId.map(_.nextId))(ConnectionResult.apply)).get
       }
 
-      actor ! handler.left
+      ibActor ! RegisterFibsPromise(handler).left
       clientSocket.eConnect(host, port, clientId)
       handler.promise.some
     } else {
@@ -121,9 +124,9 @@ class IBImpl(host: String, port: Int) extends IB {
       genericTickList: String, 
       snapshot: Boolean): Promise[MarketDataResult] = {
     val tickerId = IDGenerator.next
-    val handler = new ReqMarketDataHandler(security)
+    val handler = new ReqMarketDataHandler(security, ibActor)
 
-    actor ! handler.left
+    ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
         tickerId, 
         security.contract(0),//IDGenerator.next), 
@@ -136,7 +139,25 @@ class IBImpl(host: String, port: Int) extends IB {
 
   def cancelRealTimeBars(tickerId: Int): Unit = {}
 
-  def reqHistoricalData(tickerId: Int, contract: Contract, endDateTime: String, durationStr: String, barSizeSetting: String, whatToShow: String, useRTH: Int, formatDate: Int): Unit = {}
+  def reqHistoricalData(
+      contract: Stock, // Security 
+      endDateTime: DateTime, 
+      duration: Period, 
+      barSize: BarSize, 
+      whatToShow: ShowMe, 
+      useRTH: Boolean): Unit = {
+    val tickerId = IDGenerator.next
+    val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss z")
+    clientSocket.reqHistoricalData(
+        tickerId, 
+        contract.contract(0), 
+        fmt.print(endDateTime), 
+        duration.shows, 
+        barSize.shows, 
+        whatToShow.shows, 
+        useRTH ? 1 | 0, 
+        2)
+  }
 
   def reqRealTimeBars(tickerId: Int, contract: Contract, barSize: Int, whatToShow: String, useRTH: Boolean): Unit = {}
 
@@ -181,17 +202,21 @@ class IBImpl(host: String, port: Int) extends IB {
   def currentTime(): Promise[Long] = {
     val handler = new FibsPromise[Long] {
       var time: Option[Long] = none
+      val latch = new CountDownLatch(1)
       val timeHandler: PartialFunction[IBMessage, Unit] = {
         case t: CurrentTime => {
           time = t.time.some
           latch.countDown
+          if (latch.getCount() === 0) ibActor ! UnregisterFibsPromise(this).left
         }
+        case m => println("got %s" format m)
       }
-      val inputs = List(timeHandler)
+      val patterns = List(timeHandler)
+      val actor = Actor[IBMessage](timeHandler)
       def get = time.get
     }
 
-    actor ! handler.left
+    ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqCurrentTime()
     handler.promise
   }

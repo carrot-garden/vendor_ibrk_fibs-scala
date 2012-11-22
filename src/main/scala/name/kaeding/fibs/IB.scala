@@ -1,6 +1,7 @@
 package name.kaeding.fibs
 
 import java.net.Socket
+import org.scala_tools.time.Imports._
 
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter
@@ -38,9 +39,13 @@ trait IB {
 
 	def cancelRealTimeBars(tickerId: Int)
 
-	def reqHistoricalData(tickerId: Int, contract: Contract,
-			endDateTime: String, durationStr: String, barSizeSetting: String,
-			whatToShow: String, useRTH: Int, formatDate: Int)
+	def reqHistoricalData(
+	    contract: Stock, // Security,
+		endDateTime: DateTime, 
+		durationStr: Period, 
+		barSize: BarSize,
+		whatToShow: ShowMe, 
+		useRTH: Boolean)
 
 	def reqRealTimeBars(tickerId: Int, contract: Contract,
 			barSize: Int, whatToShow: String, useRTH: Boolean)
