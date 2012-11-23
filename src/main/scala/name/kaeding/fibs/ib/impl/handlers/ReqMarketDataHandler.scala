@@ -37,7 +37,7 @@ class ReqMarketDataHandler(security: Stock/*Security*/,
         case TickSize(TickerId, TickLastSize, v) => lastSize = v.some
         case TickString(TickerId, TickLastTimestamp, v) => timestamp = v.parseLong.toOption
         case TickPrice(TickerId, TickHigh, p, _) => high = p.some
-        case TickPrice(TickerId, TickLow, p, _) => close = p.some
+        case TickPrice(TickerId, TickLow, p, _) => low = p.some
         case TickPrice(TickerId, TickClose, p, _) => close = p.some
         case TickPrice(TickerId, TickOpen, p, _) => open = p.some
         case TickSize(TickerId, TickVolume, v) => volume = v.some
@@ -75,11 +75,7 @@ class ReqMarketDataHandler(security: Stock/*Security*/,
           stringHandler, 
           genericHandler,
           snapshotEndHandler)
-      def get = (for {
-        bp <- bidPrice
-        bs <- bidSize
-        ap <- askPrice
-        as <- askSize
-      } yield MarketDataResult(security.symbol, bp, bs, ap, as, lastPrice, lastSize, 
-          high, low, open, close, volume, timestamp, halted)).get
+      def get = MarketDataResult(security.symbol, bidPrice, bidSize, askPrice, 
+          askSize, lastPrice, lastSize, high, low, open, close, volume, timestamp,
+          halted)
     }

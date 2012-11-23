@@ -32,7 +32,7 @@ object IBActor {
     val state = new IBActorState
     def defaultHandler(msg: IBMessage) {
       println("Got unhandled message: %s" format msg)
-      state.unhandledMessages.+=(msg)
+      state.unhandledMessages += msg
     }
     Actor[FibsPromiseMessage \/ IBMessage](_.toEither match {
       case Left(RegisterFibsPromise(p)) => state.handlers = p :: state.handlers

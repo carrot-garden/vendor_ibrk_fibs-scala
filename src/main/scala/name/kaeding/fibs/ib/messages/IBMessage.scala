@@ -22,6 +22,7 @@ sealed case class WarningMessage(errorCode: Int, errorMessage: String) extends E
 
 sealed trait TickField
 object TickField {
+  implicit def tickFieldEqual = Equal.equalA[TickField]
   def read(code: Int) = code match {
     case 0 => TickBidSize
     case 1 => TickBid
@@ -134,10 +135,10 @@ import org.scala_tools.time.Imports._
 sealed case class ConnectionResult(managedAccounts: String, nextValidId: Int)
 sealed case class MarketDataResult(
     symbol: String, 
-    bidPrice: Double, 
-    bidSize: Int, 
-    askPrice: Double, 
-    askSize: Int,
+    bidPrice: Option[Double], 
+    bidSize: Option[Int], 
+    askPrice: Option[Double], 
+    askSize: Option[Int],
     lastPrice: Option[Double],
     lastSize: Option[Int],
     high: Option[Double],
