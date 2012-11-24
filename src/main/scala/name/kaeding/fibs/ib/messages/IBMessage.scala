@@ -155,5 +155,6 @@ sealed case class HistoricalDataPeriod(
     low: Double,
     close: Double,
     volume: Int,
+    count: Int,
     wap: Double,
     hasGaps: Boolean)

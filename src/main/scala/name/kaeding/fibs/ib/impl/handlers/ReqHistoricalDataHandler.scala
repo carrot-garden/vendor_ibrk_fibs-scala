@@ -38,6 +38,7 @@ class ReqHistoricalDataHandler(security: Stock /*Security*/ ,
       i.low,
       i.close,
       i.volume,
+      i.count,
       i.wap,
       i.hasGaps)
   private[this] val queue: BlockingQueue[Option[HistoricalDataPeriod]] =
@@ -47,11 +48,6 @@ class ReqHistoricalDataHandler(security: Stock /*Security*/ ,
     ibActor ! UnregisterFibsPromise(this).left
   }
   private[this] def enqueue(d: HistoricalDataPeriod) = queue add d.some
-//  private[this] def stream: Stream[HistoricalDataPeriod] =
-//    queue.take match {
-//      case Some(d) => Stream.cons(d, stream)
-//      case None => Stream.empty
-//    }
   private[this] def toStream(): Stream[HistoricalDataPeriod] = queue.take match {
     case Some(d) => Stream.cons(d, toStream)
     case None => Stream.empty

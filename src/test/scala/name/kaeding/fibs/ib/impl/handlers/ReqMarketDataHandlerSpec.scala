@@ -21,58 +21,8 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
     "ReqMarketDataHandler" ^
       "all data sent through actor makes it into the response" ! allMessagesNoNoiseEx ^
       "accept as much data as is given before the end token" ! partialDataSentEx ^
-      "accept only data with the correct tickerId, ignoring other data" ! noisyPartialDataEx^
+      "accept only data with the correct tickerId, ignoring other data" ! noisyPartialDataEx ^
       end
-
-  implicit def genTickerResponse = Arbitrary {
-    for {
-      tickerId <- arbitrary[Int]
-      resp <- genResponse(tickerId)
-      messages <- genMessages(tickerId, resp)
-      numMessages <- Gen.choose(0, 13)
-    } yield TickerResponse(tickerId, resp, messages, numMessages)
-  }
-
-  def genResponse(tickerId: Int) = for {
-    askPrice <- arbitrary[Double]
-    askSize <- arbitrary[Int]
-    bidPrice <- arbitrary[Double]
-    bidSize <- arbitrary[Int]
-    lastPrice <- arbitrary[Double]
-    lastSize <- arbitrary[Int]
-    high <- arbitrary[Double]
-    low <- arbitrary[Double]
-    open <- arbitrary[Double]
-    close <- arbitrary[Double]
-    volume <- arbitrary[Int]
-    timestamp <- arbitrary[Long]
-    halted <- arbitrary[Boolean]
-  } yield MarketDataResult("", bidPrice.some, bidSize.some, askPrice.some,
-    askSize.some, lastPrice.some, lastSize.some, high.some, low.some,
-    open.some, close.some, volume.some, timestamp.some, halted.some)
-
-  def genMessages(tickerId: Int, resp: MarketDataResult) = for {
-    askAutoExecute <- Gen.oneOf(0, 1)
-    bidAutoExecute <- Gen.oneOf(0, 1)
-    lastAutoExecute <- Gen.oneOf(0, 1)
-    highAutoExecute <- Gen.oneOf(0, 1)
-    lowAutoExecute <- Gen.oneOf(0, 1)
-    openAutoExecute <- Gen.oneOf(0, 1)
-    closeAutoExecute <- Gen.oneOf(0, 1)
-  } yield shuffle(List(
-    TickPrice(tickerId, TickAsk, resp.askPrice.get, askAutoExecute),
-    TickSize(tickerId, TickAskSize, resp.askSize.get),
-    TickPrice(tickerId, TickBid, resp.bidPrice.get, bidAutoExecute),
-    TickSize(tickerId, TickBidSize, resp.bidSize.get),
-    TickPrice(tickerId, TickLast, resp.lastPrice.get, lastAutoExecute),
-    TickSize(tickerId, TickLastSize, resp.lastSize.get),
-    TickPrice(tickerId, TickHigh, resp.high.get, highAutoExecute),
-    TickPrice(tickerId, TickLow, resp.low.get, lowAutoExecute),
-    TickPrice(tickerId, TickOpen, resp.open.get, openAutoExecute),
-    TickPrice(tickerId, TickClose, resp.close.get, closeAutoExecute),
-    TickSize(tickerId, TickVolume, resp.volume.get),
-    TickString(tickerId, TickLastTimestamp, resp.timestamp.get.shows),
-    TickGeneric(tickerId, TickHalted, resp.halted.get ? 1 | 0)))
 
   def allMessagesNoNoiseEx = prop { (r: TickerResponse) =>
     {
@@ -125,7 +75,7 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
     p.get must_== trimmed.resp
 
   }
-  
+
   def noisyPartialDataEx = prop { (r: TickerResponse, noise: List[TickerResponse]) =>
     val filteredNoise = noise.filterNot(_.tickerId === r.tickerId)
     val ibActor = IBActor()
@@ -135,39 +85,40 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
     val noiseHandler = new FibsPromise[Unit] {
       val targetMessages = new MutableList[IBMessage]
       val noiseIds = filteredNoise.map(_.tickerId)
-      val actor = Actor[IBMessage]{
-        case m@TickPrice(id, _, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickSize(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickString(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickGeneric(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickSnapshotEnd(id) if (noiseIds contains id) => logMessage(id, m)
+      val actor = Actor[IBMessage] {
+        case m @ TickPrice(id, _, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickSize(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickString(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickGeneric(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickSnapshotEnd(id) if (noiseIds contains id) => logMessage(id, m)
         case _ => ???
       }
       def get = ()
       val latch = new CountDownLatch(0)
-      def logMessage(id: Int, m: IBMessage) = 
+      def logMessage(id: Int, m: IBMessage) =
         if (id === r.tickerId) {
           targetMessages += m
         }
       val patterns = List(({
-        case m@TickPrice(id, _, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickSize(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickString(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickGeneric(id, _, _) if (noiseIds contains id) => logMessage(id, m)
-        case m@TickSnapshotEnd(id) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickPrice(id, _, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickSize(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickString(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickGeneric(id, _, _) if (noiseIds contains id) => logMessage(id, m)
+        case m @ TickSnapshotEnd(id) if (noiseIds contains id) => logMessage(id, m)
       }): PartialFunction[IBMessage, Unit])
     }
     ibActor ! RegisterFibsPromise(noiseHandler).left
     val p = handler.promise
     val trimmed = trimMessages(r)
-    val noisyMsgs = shuffle((trimmed.messages :: 
-        filteredNoise.map(n => TickSnapshotEnd(n.tickerId)) :: 
-        filteredNoise.map(_.messages).take(10)).join) :+ TickSnapshotEnd(r.tickerId)
+    val noisyMsgs = shuffle((trimmed.messages ::
+      filteredNoise.map(n => TickSnapshotEnd(n.tickerId)) ::
+      filteredNoise.map(_.messages).take(10)).join) :+ TickSnapshotEnd(r.tickerId)
     noisyMsgs.foreach(ibActor ! _.right)
-    
-    (noiseHandler.targetMessages must be empty) and (p.get must_== trimmed.resp)
 
-    }
+    (noiseHandler.targetMessages must be empty) and 
+    (p.get must_== trimmed.resp)
+
+  }
 
 }
 
