@@ -22,10 +22,14 @@ class ReqHistoricalDataHandler(security: Stock /*Security*/ ,
       enqueue(transformMsg(d))
     case d @ HistoricalData(TickerId, time, _, _, _, _, _, _, _, _) if (time.startsWith("finished-")) =>
       close
+    case d @ HistoricalDataError(TickerId, 162, msg) if (msg contains "HMDS query returned no data") =>
+      close
     case _ => ???
   }
   val historicalDataHandler: PartialFunction[IBMessage, Unit] = {
     case d @ HistoricalData(TickerId, _, _, _, _, _, _, _, _, _) => actor ! d
+    case d @ HistoricalDataError(TickerId, 162, msg) if (msg contains "HMDS query returned no data") =>
+      actor ! d
   }
   val patterns = List(historicalDataHandler)
   val latch = new CountDownLatch(0) // don't need to block

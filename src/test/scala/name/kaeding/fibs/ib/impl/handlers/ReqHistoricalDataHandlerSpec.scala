@@ -22,6 +22,7 @@ class ReqHistoricalDataHandlerSpec extends Specification with ScalaCheck {
     "ReqHistoricalDataHandler" ^
       "all data sent through actor makes it into the response" ! allMessagesNoNoiseEx ^
       "accept only data with the correct tickerId, ignoring other data" ! noisyDataEx ^
+      "returns empty stream when error message is sent indicating no data" ! noDataErrorEx ^
       end
 
   def allMessagesNoNoiseEx = prop { (h: HistoricalDataPackage) =>
@@ -71,6 +72,20 @@ class ReqHistoricalDataHandlerSpec extends Specification with ScalaCheck {
 
       (noiseHandler.targetMessages must be empty) and 
       (p.get.toList must_== h.expectedPeriods)
+    }
+  }
+  
+  def noDataErrorEx = prop { (tickerId: Int, symbol: String) => 
+    {
+      val ibActor = IBActor()
+      val handler = new ReqHistoricalDataHandler(Stock(symbol), ibActor, tickerId)
+
+      ibActor ! RegisterFibsPromise(handler).left
+      val p = handler.promise
+      
+      ibActor ! HistoricalDataError(tickerId, 162, "Historical Market Data Service error message:HMDS query returned no data: %s@SMART Trades".format(symbol)).right
+      
+      p.get.toList must be empty
     }
   }
 }
