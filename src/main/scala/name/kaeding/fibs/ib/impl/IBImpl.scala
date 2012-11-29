@@ -37,7 +37,7 @@ object IBActor {
     Actor[FibsPromiseMessage \/ IBMessage](_.toEither match {
       case Left(RegisterFibsPromise(p)) => state.handlers = p :: state.handlers
       case Left(UnregisterFibsPromise(p)) => state.handlers = state.handlers.filterNot(_ == p)
-      case Right(m) => 
+      case Right(m) =>
         state.handlers.find(_.patterns.any(_.isDefinedAt(m))).fold(some = _ ! m, none = defaultHandler(m))
     })
   }
@@ -57,8 +57,8 @@ sealed trait FibsPromiseMessage
 case class RegisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
 case class UnregisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
 
-class IBImpl(host: String, port: Int) extends IB {
-  val clientId = IDGenerator.next
+class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
+  val clientIdValue = clientId.getOrElse(IDGenerator.next)
   val ibActor = IBActor()
   val ewrapper = new EWrapperImpl(ibActor)
   val clientSocket = new EClientSocket(ewrapper)
@@ -91,7 +91,7 @@ class IBImpl(host: String, port: Int) extends IB {
       }
 
       ibActor ! RegisterFibsPromise(handler).left
-      clientSocket.eConnect(host, port, clientId)
+      clientSocket.eConnect(host, port, clientIdValue)
       handler.promise.some
     } else {
       none
@@ -120,18 +120,18 @@ class IBImpl(host: String, port: Int) extends IB {
   def reqScannerSubscription(tickerId: Int, subscription: ScannerSubscription): Unit = {}
 
   def reqMktData(
-      security: Stock, // Security
-      genericTickList: String, 
-      snapshot: Boolean): Promise[MarketDataResult] = {
+    security: Stock, // Security
+    genericTickList: String,
+    snapshot: Boolean): Promise[MarketDataResult] = {
     val tickerId = IDGenerator.next
     val handler = new ReqMarketDataHandler(security, ibActor, tickerId)
 
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
-        tickerId, 
-        security.contract(0),//IDGenerator.next), 
-        genericTickList, 
-        snapshot)
+      tickerId,
+      security.contract(0), //IDGenerator.next), 
+      genericTickList,
+      snapshot)
     handler.promise
   }
 
@@ -139,28 +139,33 @@ class IBImpl(host: String, port: Int) extends IB {
 
   def cancelRealTimeBars(tickerId: Int): Unit = {}
 
+  // one request per 10 seconds
+  private[this] val historicalDataGovernor = new Governor(10500)
   def reqHistoricalData(
-      security: Stock, // Security 
-      endDateTime: DateTime, 
-      duration: Period, 
-      barSize: BarSize, 
-      whatToShow: ShowMe, 
-      useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]] = {
+    security: Stock, // Security 
+    endDateTime: DateTime,
+    duration: Period,
+    barSize: BarSize,
+    whatToShow: ShowMe,
+    useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]] = {
     val tickerId = IDGenerator.next
     val handler = new ReqHistoricalDataHandler(security, ibActor, tickerId)
     ibActor ! RegisterFibsPromise(handler).left
 
-    val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss z")
-    clientSocket.reqHistoricalData(
-        tickerId, 
-        security.contract(0), 
-        fmt.print(endDateTime), 
-        duration.shows, 
-        barSize.shows, 
-        whatToShow.shows, 
-        useRTH ? 1 | 0, 
+    Promise {
+      historicalDataGovernor.requestClearance
+      val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss")
+      clientSocket.reqHistoricalData(
+        tickerId,
+        security.contract(0),
+        fmt.print(endDateTime),
+        duration.shows,
+        barSize.shows,
+        whatToShow.shows,
+        useRTH ? 1 | 0,
         2)
-    handler.promise
+    } >> handler.promise
+
   }
 
   def reqRealTimeBars(tickerId: Int, contract: Contract, barSize: Int, whatToShow: String, useRTH: Boolean): Unit = {}
