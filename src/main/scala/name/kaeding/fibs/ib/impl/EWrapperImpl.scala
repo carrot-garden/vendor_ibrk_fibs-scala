@@ -2,9 +2,10 @@ package name.kaeding.fibs
 package ib
 package impl
 
-import com.ib.client.{Order => IBOrder, _}
+import com.ib.client.{Order => IBOrder, CommissionReport => IBCommissionReport, _}
 import scalaz._, Scalaz._
 import scalaz.concurrent._
+import org.scala_tools.time.Imports._
 import messages._
 import name.kaeding.fibs.ib.messages.IBMessage
 
@@ -91,19 +92,27 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage]) 
 
   def marketDataType(reqId: Int, marketDataType: Int): Unit = ???
 
-  def commissionReport(commissionReport: CommissionReport): Unit = ???
+  val yyyymmddFormat = DateTimeFormat.forPattern("yyyyMMdd")
+  def commissionReport(r: IBCommissionReport): Unit = 
+    CommissionReport(
+        r.m_execId,
+        r.m_commission,
+        r.m_currency,
+        r.m_realizedPNL,
+        r.m_yield,
+        yyyymmddFormat.parseDateTime(r.m_yieldRedemptionDate.shows))
 
   def error(e: Exception): Unit = throw e // ???
 
-  def error(str: String): Unit = throw UnknownIBError(-1, -1, str)
+  def error(str: String): Unit = ibActor ! UnknownIBError(-1, -1, str).right
 
   def error(id: Int, errorCode: Int, errorMsg: String): Unit = errorCode match {
     case c if (2100 until 2110).contains(c) => ibActor ! WarningMessage(errorCode, errorMsg).right
-    case _ => println(new UnknownIBError(id, errorCode, errorMsg))
+    case 162 => ibActor ! HistoricalDataError(id, errorCode, errorMsg).right
+    case _ => ibActor ! UnknownIBError(id, errorCode, errorMsg).right
   }
 
   def connectionClosed(): Unit = ???
 
 }
 
-case class UnknownIBError(id: Int, errorCode: Int, errorMsg: String) extends Exception

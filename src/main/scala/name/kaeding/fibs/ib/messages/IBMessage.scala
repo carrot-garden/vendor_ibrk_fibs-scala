@@ -2,8 +2,10 @@ package name.kaeding.fibs
 package ib.messages
 
 import scalaz._, Scalaz._
+import org.scala_tools.time.Imports._
 
 sealed trait IBMessage 
+sealed case class UnknownIBError(id: Int, errorCode: Int, errorMsg: String) extends IBMessage
 sealed case class ManagedAccounts(accounts: String) extends IBMessage
 sealed case class NextValidId(nextId: Int) extends IBMessage
 sealed case class CurrentTime(time: Long) extends IBMessage
@@ -16,6 +18,7 @@ sealed case class TickSnapshotEnd(reqId: Int) extends IBMessage
 sealed case class HistoricalData(reqId: Int, date: String, open: Double, high: Double, 
       low: Double, close: Double, volume: Int, count: Int, wap: Double, 
       hasGaps: Boolean) extends IBMessage
+sealed case class HistoricalDataError(tickerId: Int, errorCode: Int, errorMsg: String) extends IBMessage
 
 sealed trait ErrorCodes extends IBMessage
 sealed case class WarningMessage(errorCode: Int, errorMessage: String) extends ErrorCodes
@@ -78,7 +81,7 @@ sealed trait BarSize
 object BarSize {
   implicit def barSizeShows = new Show[BarSize] {
     override def shows(s: BarSize) = s match {
-      case BarSize1Sec => "1 sec"
+      case BarSize1Sec => "1 secs"
       case BarSize5Sec => "5 secs"
       case BarSize15Sec => "15 secs"
       case BarSize30Sec => "30 secs"
@@ -127,6 +130,14 @@ object ShowMeAsk extends ShowMe
 object ShowMeBidAsk extends ShowMe
 object ShowMeHistoricalVolatility extends ShowMe
 object ShowMeOptionImpliedVolatility extends ShowMe
+
+sealed case class CommissionReport(
+    execId: String, 
+    commission: Double, 
+    currency: String, 
+    realizedPL: Double,
+    totalYield: Double,
+    yieldRedemptionDate: DateTime) extends IBMessage
 
 // Responses
 
