@@ -5,7 +5,7 @@ import org.scalacheck._
 import Arbitrary._
 import scalaz._, Scalaz._
 import scala.util.Random.shuffle
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import name.kaeding.fibs.ib.messages._
 

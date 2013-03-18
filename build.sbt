@@ -3,7 +3,7 @@ name := "fibs"
 
 organization := "name.kaeding"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.2.0-SNAPSHOT"
 
 description := "Scala wrapper for Interactive Brokers TWS API, using a Scalaz-inspired functional approach"
 
@@ -26,9 +26,9 @@ scmInfo := Some(
 // organizationName := "My Company"
 
 /* scala versions and options */
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.1"
 
-// crossScalaVersions := Seq("2.9.1")
+crossScalaVersions := Seq("2.10.1")
 
 offline := false
 
@@ -43,9 +43,9 @@ mainClass in (Compile, run) := Some("name.kaeding.fibs.Main")
 
 /* dependencies */
 libraryDependencies ++= Seq (
-  "org.scalaj" %% "scalaj-time" % "0.6",
-  "org.scalaz" %% "scalaz-core" % "7.0.0-M4",
-  "org.scalaz" %% "scalaz-concurrent" % "7.0.0-M4",
+  "com.github.nscala-time" %% "nscala-time" % "0.2.0",
+  "org.scalaz" %% "scalaz-core" % "7.0.0-M9",
+  "org.scalaz" %% "scalaz-concurrent" % "7.0.0-M9",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.specs2" %% "specs2" % "1.12.3" % "test"
 )

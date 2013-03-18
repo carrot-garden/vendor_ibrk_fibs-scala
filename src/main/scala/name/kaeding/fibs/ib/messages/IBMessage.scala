@@ -2,7 +2,7 @@ package name.kaeding.fibs
 package ib.messages
 
 import scalaz._, Scalaz._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 sealed trait IBMessage 
 sealed case class UnknownIBError(id: Int, errorCode: Int, errorMsg: String) extends IBMessage
@@ -141,7 +141,7 @@ sealed case class CommissionReport(
 
 // Responses
 
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 sealed case class ConnectionResult(managedAccounts: String, nextValidId: Int)
 sealed case class MarketDataResult(

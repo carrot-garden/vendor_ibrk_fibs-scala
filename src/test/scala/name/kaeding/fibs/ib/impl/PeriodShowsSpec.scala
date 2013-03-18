@@ -6,8 +6,8 @@ import org.specs2._
 import org.scalacheck._
 import Arbitrary._
 
-import org.scala_tools.time.Imports._
-import org.scala_tools.time.RichInt
+import com.github.nscala_time.time.Imports._
+import com.github.nscala_time.time.{RichInt => RI}
 
 import scalaz._, Scalaz._
 
@@ -40,47 +40,47 @@ class PeriodShowsSpec extends Specification with ScalaCheck { def is =
   def exYear = 1.year.shows must_== "1 Y"
   def exMonth = Prop.forAll(arbInt)((i: Int) => i.months.shows must_== "%d M".format(i))
   def exSeconds = Prop.forAll(arbSeconds)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.seconds
     p.shows must_== "%d S".format(i)
   })
   def exMinutes = Prop.forAll(arbMinutes)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.minutes
     p.shows must_== "%d S".format(i * 60)
   })
   def exHours = Prop.forAll(arbHours)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.hours
     p.shows must_== "%d S".format(i * 60*60)
   })
   def exDays = Prop.forAll(arbDays)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.days
     p.shows must_== "%d D".format(i)
   })
   def exDaysSeconds = Prop.forAll(arbDaysSeconds)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.seconds
     p.shows must_== "%d D".format(i / (60*60*24))
   })
   def exDaysMinutes = Prop.forAll(arbDaysMinutes)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.minutes
     p.shows must_== "%d D".format(i / (60*24))
   })
   def exDaysHours = Prop.forAll(arbDaysHours)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.hours
     p.shows must_== "%d D".format(i / 24)
   })
   def exDaysWeeks = Prop.forAll(arbDaysWeeks)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.weeks
     p.shows must_== "%d D".format(i * 7)
   })
   def exWeeks = Prop.forAll(arbWeeks)((i: Int) => {
-    val ri: org.scala_tools.time.RichInt = i
+    val ri: RI = i
     val p: Period = ri.weeks
     p.shows must_== "%d W".format(i)
   })

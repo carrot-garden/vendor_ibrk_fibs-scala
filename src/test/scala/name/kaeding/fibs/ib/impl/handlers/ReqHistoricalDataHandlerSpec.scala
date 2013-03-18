@@ -12,7 +12,7 @@ import scala.util.Random.shuffle
 import scala.collection.mutable.MutableList
 import java.util.concurrent.CountDownLatch
 
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import messages._
 import contract._

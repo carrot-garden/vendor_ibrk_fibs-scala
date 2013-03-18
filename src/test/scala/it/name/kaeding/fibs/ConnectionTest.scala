@@ -3,7 +3,7 @@ package it.name.kaeding.fibs
 import name.kaeding.fibs.ib.impl.IBImpl
 import name.kaeding.fibs.contract.Stock
 import name.kaeding.fibs.ib.messages._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 object ConnectionTest extends App {
   val ib = new IBImpl("localhost", 7496)

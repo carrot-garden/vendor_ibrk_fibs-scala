@@ -8,7 +8,7 @@ import java.util.concurrent.{ LinkedBlockingQueue, BlockingQueue }
 
 import scalaz._, Scalaz._
 import scalaz.concurrent._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import messages._
 import contract._

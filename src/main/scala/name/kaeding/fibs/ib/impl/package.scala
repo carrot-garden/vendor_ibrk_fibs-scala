@@ -1,7 +1,7 @@
 package name.kaeding.fibs.ib
 
 import scalaz._, Scalaz._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 package object impl {
   implicit def periodShows = new Show[Period] {

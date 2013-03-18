@@ -1,7 +1,7 @@
 package name.kaeding.fibs
 
 import java.net.Socket
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter

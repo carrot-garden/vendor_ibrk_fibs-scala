@@ -13,7 +13,7 @@ import com.ib.client.ExecutionFilter
 import com.ib.client.Order
 import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import name.kaeding.fibs.IB
 import messages._
@@ -38,7 +38,7 @@ object IBActor {
       case Left(RegisterFibsPromise(p)) => state.handlers = p :: state.handlers
       case Left(UnregisterFibsPromise(p)) => state.handlers = state.handlers.filterNot(_ == p)
       case Right(m) =>
-        state.handlers.find(_.patterns.any(_.isDefinedAt(m))).fold(some = _ ! m, none = defaultHandler(m))
+        state.handlers.find(_.patterns.any(_.isDefinedAt(m))).cata(some = _ ! m, none = defaultHandler(m))
     })
   }
 }
