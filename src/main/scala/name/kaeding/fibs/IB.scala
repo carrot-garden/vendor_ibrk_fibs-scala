@@ -30,10 +30,13 @@ trait IB {
 	def reqScannerSubscription(tickerId: Int,
 			subscription: ScannerSubscription)
 
-	def reqMktData(
+	def reqMktDataSnapshot(
 	    security: Stock, // Security,
-		genericTickList: String, 
-		snapshot: Boolean): Promise[MarketDataResult]
+		genericTickList: String): Promise[MarketDataResult]
+	
+	def reqMktDataStream(
+	    security: Stock, // Security,
+		genericTickList: String): CloseableStream[MarketDataResult]
 
 	def cancelHistoricalData(tickerId: Int)
 

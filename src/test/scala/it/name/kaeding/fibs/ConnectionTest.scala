@@ -17,11 +17,15 @@ object ConnectionTest extends App {
     println("connectionTime: %s" format ib.TwsConnectionTime)
     val currentTime = ib.currentTime
     println("currentTime: %d" format currentTime.get)
-    val aapl = ib.reqMktData(Stock("AAPL"), "", true)
+    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
     println("aapl: %s" format aapl.get)
-    val hist = ib.reqHistoricalData(Stock("AAPL"), DateTime.now, 1.day, BarSize3Min, ShowMeTrades, true)
-    println("sent historical data request")
-    println("Historical AAPL: %s" format hist.get.toList)
+//    val hist = ib.reqHistoricalData(Stock("AAPL"), DateTime.now, 1.day, BarSize3Min, ShowMeTrades, true)
+//    println("sent historical data request")
+//    println("Historical AAPL: %s" format hist.get.toList)
+    println("Streaming AAPL:")
+    val aaplStream = ib.reqMktDataStream(Stock("AAPL"), "")
+    aaplStream.as.map(println).take(250)
+    aaplStream.close
     Thread.sleep(3000)
   } finally {
     ib.disconnect()

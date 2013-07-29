@@ -119,10 +119,9 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
   def reqScannerSubscription(tickerId: Int, subscription: ScannerSubscription): Unit = {}
 
-  def reqMktData(
+  def reqMktDataSnapshot(
     security: Stock, // Security
-    genericTickList: String,
-    snapshot: Boolean): Promise[MarketDataResult] = {
+    genericTickList: String): Promise[MarketDataResult] = {
     val tickerId = IDGenerator.next
     val handler = new ReqMarketDataHandler(security, ibActor, tickerId)
 
@@ -131,8 +130,23 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
       tickerId,
       security.contract(0), //IDGenerator.next), 
       genericTickList,
-      snapshot)
+      true)
     handler.promise
+  }
+  
+  def reqMktDataStream(
+    security: Stock, // Security
+    genericTickList: String): CloseableStream[MarketDataResult] = {
+    val tickerId = IDGenerator.next
+    val handler = new ReqMarketDataStreamHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
+
+    ibActor ! RegisterFibsPromise(handler).left
+    clientSocket.reqMktData(
+      tickerId,
+      security.contract(0), //IDGenerator.next), 
+      genericTickList,
+      false)
+    handler.get
   }
 
   def cancelHistoricalData(tickerId: Int): Unit = {}
