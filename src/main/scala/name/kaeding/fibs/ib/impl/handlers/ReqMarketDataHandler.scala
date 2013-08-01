@@ -11,6 +11,7 @@ import contract._
 
 import java.util.concurrent.{ LinkedBlockingQueue, BlockingQueue }
 import com.ib.client.EClientSocket
+import com.github.nscala_time.time.Imports._
 
 class ReqMarketDataHandler(security: Stock /*Security*/ ,
                            ibActor: Actor[FibsPromiseMessage \/ IBMessage],
@@ -78,5 +79,5 @@ class ReqMarketDataHandler(security: Stock /*Security*/ ,
     snapshotEndHandler)
   def get = MarketDataResult(security.symbol, bidPrice, bidSize, askPrice,
     askSize, lastPrice, lastSize, high, low, open, close, volume, timestamp,
-    halted)
+    halted, DateTime.now)
 }

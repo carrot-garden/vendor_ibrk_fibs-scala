@@ -17,6 +17,7 @@ import contract._
 import TickField._
 
 import java.util.concurrent.CountDownLatch
+import com.github.nscala_time.time.Imports._
 
 @RunWith(classOf[JUnitRunner])
 class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
@@ -51,7 +52,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     val rp = Promise(handler.get)
     ibActor ! TickPrice(tickerId, TickAsk, p, 0).right
     ibActor ! TickSize(tickerId, TickAskSize, s).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, p.some, s.some, None, None, None, None, None, None, None, None, None)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, p.some, s.some, None, None, None, None, None, None, None, None, None, ts)
   }
 
   def bidOnlyEx = prop { (p: Double, s: Int, sym: String, tickerId: Int) ⇒
@@ -64,7 +66,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! TickPrice(tickerId, TickBid, p, 0).right
     ibActor ! TickSize(tickerId, TickBidSize, s).right
     val as = rp.get.as
-    as.head() must_== MarketDataResult(sym, p.some, s.some, None, None, None, None, None, None, None, None, None, None, None)
+    val ts = DateTime.now
+    as.head().copy(received = ts) must_== MarketDataResult(sym, p.some, s.some, None, None, None, None, None, None, None, None, None, None, None, ts)
   }
 
   def lastOnlyEx = prop { (p: Double, s: Int, t: Long, sym: String, tickerId: Int) ⇒
@@ -78,7 +81,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! TickSize(tickerId, TickLastSize, s).right
     ibActor ! TickString(tickerId, TickLastTimestamp, t.toString).right
     val as = rp.get.as
-    as.head() must_== MarketDataResult(sym, None, None, None, None, p.some, s.some, None, None, None, None, None, t.some, None)
+    val ts = DateTime.now
+    as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, p.some, s.some, None, None, None, None, None, t.some, None, ts)
   }
 
   def highOnlyEx = prop { (h: Double, sym: String, tickerId: Int) ⇒
@@ -89,7 +93,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! RegisterFibsPromise(handler).left
     val rp = Promise(handler.get)
     ibActor ! TickPrice(tickerId, TickHigh, h, 0).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None, ts)
   }
 
   def lowOnlyEx = prop { (l: Double, sym: String, tickerId: Int) ⇒
@@ -100,7 +105,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! RegisterFibsPromise(handler).left
     val rp = Promise(handler.get)
     ibActor ! TickPrice(tickerId, TickLow, l, 0).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, None, None, None, None, None, l.some, None, None, None, None, None)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, None, None, None, l.some, None, None, None, None, None, ts)
   }
 
   def closeOnlyEx = prop { (c: Double, sym: String, tickerId: Int) ⇒
@@ -111,7 +117,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! RegisterFibsPromise(handler).left
     val rp = Promise(handler.get)
     ibActor ! TickPrice(tickerId, TickClose, c, 0).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, c.some, None, None, None)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, c.some, None, None, None, ts)
   }
 
   def volumeOnlyEx = prop { (v: Int, sym: String, tickerId: Int) ⇒
@@ -122,7 +129,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! RegisterFibsPromise(handler).left
     val rp = Promise(handler.get)
     ibActor ! TickSize(tickerId, TickVolume, v).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, None, v.some, None, None)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, None, v.some, None, None, ts)
   }
 
   def haltedOnlyEx = prop { (h: Boolean, sym: String, tickerId: Int) ⇒
@@ -134,7 +142,8 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     val rp = Promise(handler.get)
     val hInt = if (h) 1 else 0
     ibActor ! TickGeneric(tickerId, TickHalted, hInt).right
-    rp.get.as.head() must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, None, None, None, h.some)
+    val ts = DateTime.now
+    rp.get.as.head().copy(received = ts) must_== MarketDataResult(sym, None, None, None, None, None, None, None, None, None, None, None, None, h.some, ts)
   }
 
   def highBetweenBidEx = prop { (p: Double, s: Int, h: Double, sym: String, tickerId: Int) ⇒
@@ -148,9 +157,10 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! TickPrice(tickerId, TickHigh, h, 0).right
     ibActor ! TickSize(tickerId, TickBidSize, s).right
     val as = rp.get.as 
-    List(as.head(), as.tail().head()) must_== 
-      List(MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None),
-          MarketDataResult(sym, p.some, s.some, None, None, None, None, h.some, None, None, None, None, None, None))
+    val ts = DateTime.now
+    List(as.head().copy(received = ts), as.tail().head().copy(received = ts)) must_== 
+      List(MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None, ts),
+          MarketDataResult(sym, p.some, s.some, None, None, None, None, h.some, None, None, None, None, None, None, ts))
     
   }
 
@@ -167,10 +177,11 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
     ibActor ! TickPrice(tickerId, TickAsk, p2, 0).right
     ibActor ! TickSize(tickerId, TickAskSize, s2).right
     val as = rp.get.as 
-    List(as.head(), as.tail().head(), as.tail().tail().head()) must_== 
-      List(MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None),
-          MarketDataResult(sym, None, None, p1.some, s1.some, None, None, h.some, None, None, None, None, None, None),
-          MarketDataResult(sym, None, None, p2.some, s2.some, None, None, h.some, None, None, None, None, None, None))
+    val ts = DateTime.now
+    List(as.head().copy(received = ts), as.tail().head().copy(received = ts), as.tail().tail().head().copy(received = ts)) must_== 
+      List(MarketDataResult(sym, None, None, None, None, None, None, h.some, None, None, None, None, None, None, ts),
+          MarketDataResult(sym, None, None, p1.some, s1.some, None, None, h.some, None, None, None, None, None, None, ts),
+          MarketDataResult(sym, None, None, p2.some, s2.some, None, None, h.some, None, None, None, None, None, None, ts))
     
   }
 

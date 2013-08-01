@@ -33,7 +33,7 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
       val p = handler.promise
       (r.messages :+ TickSnapshotEnd(r.tickerId)).foreach(ibActor ! _.right)
 
-      p.get must_== r.resp
+      p.get.copy(received = r.resp.received) must_== r.resp
     }
   }
 
@@ -59,7 +59,8 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
       msgsContains(TickClose) ? r.resp.close | None,
       msgsContains(TickVolume) ? r.resp.volume | None,
       msgsContains(TickLastTimestamp) ? r.resp.timestamp | None,
-      msgsContains(TickHalted) ? r.resp.halted | None)
+      msgsContains(TickHalted) ? r.resp.halted | None,
+      r.resp.received)
     r.copy(messages = msgs, resp = expected)
   }
 
@@ -72,7 +73,7 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
     val trimmed = trimMessages(r)
     (trimmed.messages :+ TickSnapshotEnd(r.tickerId)).foreach(ibActor ! _.right)
 
-    p.get must_== trimmed.resp
+    p.get.copy(received = r.resp.received) must_== trimmed.resp
 
   }
 
@@ -116,7 +117,7 @@ class ReqMarketDataHandlerSpec extends Specification with ScalaCheck {
     noisyMsgs.foreach(ibActor ! _.right)
 
     (noiseHandler.targetMessages must be empty) and 
-    (p.get must_== trimmed.resp)
+    (p.get.copy(received = r.resp.received) must_== trimmed.resp)
 
   }
 

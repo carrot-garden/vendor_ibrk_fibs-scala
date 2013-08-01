@@ -11,6 +11,7 @@ import contract._
 
 import java.util.concurrent.{ LinkedBlockingQueue, BlockingQueue }
 import com.ib.client.EClientSocket
+import com.github.nscala_time.time.Imports._
 
 class ReqMarketDataStreamHandler(security: Stock /*Security*/ ,
                                  ibActor: Actor[FibsPromiseMessage \/ IBMessage],
@@ -92,7 +93,7 @@ class ReqMarketDataStreamHandler(security: Stock /*Security*/ ,
   private[this] def enqueue: Unit =
     queue add MarketDataResult(security.symbol, bid.price, bid.size, ask.price,
       ask.size, last.price, last.size, high, low, open, close, volume, last.time,
-      halted).some
+      halted, DateTime.now).some
   private[this] def toStream: EphemeralStream[MarketDataResult] = {
     queue.take match {
       case Some(d) ⇒ EphemeralStream.cons(d, toStream)

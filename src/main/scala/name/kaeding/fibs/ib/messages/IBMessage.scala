@@ -158,7 +158,8 @@ sealed case class MarketDataResult(
     close: Option[Double],
     volume: Option[Int],
     timestamp: Option[Long],
-    halted: Option[Boolean])
+    halted: Option[Boolean],
+    received: DateTime)
 sealed case class HistoricalDataPeriod(
     time: DateTime,
     open: Double,

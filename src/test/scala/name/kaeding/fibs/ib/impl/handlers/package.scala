@@ -106,7 +106,7 @@ package object handlers {
     halted <- arbitrary[Boolean]
   } yield MarketDataResult("", bidPrice.some, bidSize.some, askPrice.some,
     askSize.some, lastPrice.some, lastSize.some, high.some, low.some,
-    open.some, close.some, volume.some, timestamp.some, halted.some)
+    open.some, close.some, volume.some, timestamp.some, halted.some, DateTime.now)
 
   def genMessages(tickerId: Int, resp: MarketDataResult) = for {
     askAutoExecute <- Gen.oneOf(0, 1)
