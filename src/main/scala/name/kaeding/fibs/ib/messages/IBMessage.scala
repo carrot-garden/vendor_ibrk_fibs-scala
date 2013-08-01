@@ -169,3 +169,28 @@ sealed case class HistoricalDataPeriod(
     count: Int,
     wap: Double,
     hasGaps: Boolean)
+
+sealed trait OrderType
+object OrderType {
+  implicit val OrderTypeShows = new Show[OrderType] {
+    override def shows(t: OrderType) = t match {
+      case Limit => "LMT"
+      case Stop => "STP"
+      case StopLimit => "STP LMT"
+      case TrailLimitIfTouched => "TRAIL LIT"
+      case TrailMarketIfTouched => "TRAIL MIT"
+      case TrailStop => "TRAIL"
+      case TraitStopLimit => "TRAIL LIMIT"
+      case Market => "MKT"
+    }
+  }
+}
+case object Limit extends OrderType
+case object Stop extends OrderType
+case object StopLimit extends OrderType
+case object TrailLimitIfTouched extends OrderType
+case object TrailMarketIfTouched extends OrderType
+case object TrailStop extends OrderType
+case object TraitStopLimit extends OrderType
+case object Market extends OrderType
+// ... and more

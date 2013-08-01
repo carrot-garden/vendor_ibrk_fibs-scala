@@ -1,18 +1,17 @@
 package name.kaeding.fibs
 
 import java.net.Socket
-import com.github.nscala_time.time.Imports._
-
+import com.github.nscala_time.time.Imports.{order => _, _}
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter
-import com.ib.client.Order
+import com.ib.client.{ Order => IBOrder }
 import com.ib.client.ScannerSubscription
-
-import scalaz._, Scalaz._
+import scalaz.{Order => _, _}, Scalaz._
 import scalaz.concurrent._
-
 import contract._
+import order._
 import ib.messages._
+import name.kaeding.fibs.ib.impl.HasIBOrder
 
 trait IB {
 	def serverVersion(): Int
@@ -66,7 +65,7 @@ trait IB {
 			exerciseAction: Int, exerciseQuantity: Int, account: String,
 			overrideNatural: Int)
 
-	def placeOrder(id: Int, contract: Contract, order: Order)
+	def placeOrder[S, O[S]<:Order[S]](order: O[S])(implicit hasOrder: HasIBOrder[S, O], sconv: S => Stock): Unit
 
 	def reqAccountUpdates(subscribe: Boolean, acctCode: String)
 

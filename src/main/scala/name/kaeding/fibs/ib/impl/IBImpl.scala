@@ -6,19 +6,20 @@ import java.net.Socket
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.CountDownLatch
 import scala.collection.mutable.MutableList
-import scalaz._, Scalaz._
+import scalaz.{Order => _, _}, Scalaz._
 import scalaz.concurrent._
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter
-import com.ib.client.Order
+import com.ib.client.{ Order => IBOrder }
 import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
-import com.github.nscala_time.time.Imports._
+import com.github.nscala_time.time.Imports.{order => _, _}
 
 import name.kaeding.fibs.IB
 import messages._
 import contract._
 import handlers._
+import order._
 import Contract._
 
 object IBActor {
@@ -62,6 +63,8 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
   val ibActor = IBActor()
   val ewrapper = new EWrapperImpl(ibActor)
   val clientSocket = new EClientSocket(ewrapper)
+  private[this] var orderIdGenerator: Option[AtomicInteger] = None
+  def nextOrderId: Int = orderIdGenerator.map(_.getAndIncrement).getOrElse(-1)
   implicit val s = Strategy.DefaultExecutorService
 
   def connect(): Option[Promise[ConnectionResult]] = {
@@ -80,6 +83,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
         val nextIdHandler: PartialFunction[IBMessage, Unit] = {
           case v: NextValidId => {
             nextId = v.some
+            orderIdGenerator = new AtomicInteger(v.nextId).some
             latch.countDown
             if (latch.getCount() === 0) ibActor ! UnregisterFibsPromise(this).left
           }
@@ -194,7 +198,16 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
   def exerciseOptions(tickerId: Int, contract: Contract, exerciseAction: Int, exerciseQuantity: Int, account: String, overrideNatural: Int): Unit = {}
 
-  def placeOrder(id: Int, contract: Contract, order: Order): Unit = {}
+  def placeOrder[S, O[S] <: Order[S]](order: O[S])(implicit hasOrder: HasIBOrder[S, O], sconv: S => Stock): Unit = {
+    import HasIBOrder._
+    val orderId = nextOrderId
+    val ibOrder: IBOrder = hasOrder.ibOrder(order, orderId)
+    val security: Stock = order.security
+    val contract: Contract = security.contract(0)
+    val tickerId = IDGenerator.next
+    clientSocket.placeOrder(orderId, contract, ibOrder)
+    // TODO: handle openOder response message
+  }
 
   def reqAccountUpdates(subscribe: Boolean, acctCode: String): Unit = {}
 
