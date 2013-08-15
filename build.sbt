@@ -44,8 +44,8 @@ mainClass in (Compile, run) := Some("name.kaeding.fibs.Main")
 /* dependencies */
 libraryDependencies ++= Seq (
   "com.github.nscala-time" %% "nscala-time" % "0.2.0",
-  "org.scalaz" %% "scalaz-core" % "7.0.0-M9",
-  "org.scalaz" %% "scalaz-concurrent" % "7.0.0-M9",
+  "org.scalaz" %% "scalaz-core" % "7.0.3",
+  "org.scalaz" %% "scalaz-concurrent" % "7.0.3",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.specs2" %% "specs2" % "1.12.3" % "test",
   "junit" % "junit" % "4.8.1" % "test"
@@ -72,13 +72,13 @@ releaseSettings
 /* publishing */
 publishMavenStyle := true
 
-//publishTo <<= version { (v: String) =>
-//  val nexus = "https://oss.sonatype.org/"
-//  if (v.trim.endsWith("SNAPSHOT")) Some(
-//    "snapshots" at nexus + "content/repositories/snapshots"
-//  )
-//  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-//                      }
+publishTo <<= version { (v: String) =>
+  val base = "/home/pkaeding/mvn.kaeding.name/"
+  if (v.trim.endsWith("SNAPSHOT"))
+    Some(Resolver.sftp("Maven Snapshots", "spacecompute.com", base + "snapshots" ) as("pkaeding", new File("~/.ssh/id_dsa.pub")))
+  else
+    Some(Resolver.sftp("Maven Releases", "spacecompute.com", base + "releases" ) as("pkaeding", new File("~/.ssh/id_dsa.pub")))
+}
 
 publishArtifact in Test := false
 
@@ -90,7 +90,7 @@ pomExtra := (
       <id>pkaeding</id>
       <name>Patrick Kaeding</name>
       <email>patrick@kaeding.name</email>
-      <!-- <url></url> -->
+      <url>http://kaeding.name</url>
     </developer>
   </developers>
 )

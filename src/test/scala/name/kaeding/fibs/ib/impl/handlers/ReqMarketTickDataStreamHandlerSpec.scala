@@ -38,7 +38,7 @@ class ReqMarketTickDataStreamHandlerSpec extends Specification with ScalaCheck {
       val p = handler.promise
       d.messages.foreach(ibActor ! _.right)
       val r = p.get
-      Thread.sleep(50)
+      Thread.sleep(300)
       r.close
 
       r.as.toList must_== d.expectedPeriods
@@ -77,7 +77,7 @@ class ReqMarketTickDataStreamHandlerSpec extends Specification with ScalaCheck {
       val allMessages = (d.messages :: filteredNoise.map(_.messages)).join
       allMessages.foreach(ibActor ! _.right)
       val r = p.get
-      Thread.sleep(50)
+      Thread.sleep(300)
       r.close
 
       (noiseHandler.targetMessages must be empty) and 
