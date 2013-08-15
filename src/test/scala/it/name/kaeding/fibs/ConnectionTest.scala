@@ -35,7 +35,7 @@ object ConnectionTest extends App {
     
     println("Streaming AAPL ticks:")
     val aaplStream = ib.reqTickDataStream(Stock("AAPL"))
-    aaplStream.as.map(println).take(250)
+    aaplStream.as.map(println).take(25)
     aaplStream.close
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)

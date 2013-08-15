@@ -14,6 +14,7 @@ import com.ib.client.{ Order => IBOrder }
 import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
 import com.github.nscala_time.time.Imports.{order => _, _}
+import grizzled.slf4j.Logging
 
 import name.kaeding.fibs.IB
 import messages._
@@ -22,7 +23,7 @@ import handlers._
 import order._
 import Contract._
 
-object IBActor {
+object IBActor extends Logging {
   private[this] class IBActorState {
     var handlers: List[FibsPromise[_]] = Nil
     val unhandledMessages: MutableList[IBMessage] = MutableList[IBMessage]()
@@ -32,7 +33,7 @@ object IBActor {
   def apply() = {
     val state = new IBActorState
     def defaultHandler(msg: IBMessage) {
-      println("Got unhandled message: %s" format msg)
+      debug("Got unhandled message: %s" format msg)
       state.unhandledMessages += msg
     }
     Actor[FibsPromiseMessage \/ IBMessage](_.toEither match {

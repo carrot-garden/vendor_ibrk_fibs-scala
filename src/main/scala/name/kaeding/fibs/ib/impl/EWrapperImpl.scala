@@ -27,7 +27,7 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage]) 
   def tickGeneric(tickerId: Int, tickType: Int, value: Double): Unit = 
     ibActor ! TickGeneric(tickerId, TickField.read(tickType), value).right
 
-  def tickString(tickerId: Int, tickType: Int, value: String): Unit = 
+  def tickString(tickerId: Int, tickType: Int, value: String): Unit =
     ibActor ! TickString(tickerId, TickField.read(tickType), value).right
 
   def tickEFP(tickerId: Int, tickType: Int, basisPoints: Double, formattedBasisPoints: String, impliedFuture: Double, holdDays: Int, futureExpiry: String, dividendImpact: Double, dividendsToExpiry: Double): Unit = ???

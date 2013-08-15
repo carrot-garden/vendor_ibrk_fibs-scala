@@ -44,6 +44,7 @@ mainClass in (Compile, run) := Some("name.kaeding.fibs.Main")
 /* dependencies */
 libraryDependencies ++= Seq (
   "com.github.nscala-time" %% "nscala-time" % "0.2.0",
+  "org.clapper" %% "grizzled-slf4j" % "1.0.1",
   "org.scalaz" %% "scalaz-core" % "7.0.3",
   "org.scalaz" %% "scalaz-concurrent" % "7.0.3",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",

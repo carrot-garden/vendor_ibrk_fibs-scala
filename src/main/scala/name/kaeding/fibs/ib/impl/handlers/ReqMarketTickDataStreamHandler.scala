@@ -8,20 +8,21 @@ import scalaz._, Scalaz._
 import scalaz.concurrent._
 import messages._
 import contract._
-
 import java.util.concurrent.{ LinkedBlockingQueue, BlockingQueue }
 import com.ib.client.EClientSocket
 import com.github.nscala_time.time.Imports._
+import grizzled.slf4j.Logging
 
 class ReqMarketTickDataStreamHandler(security: Stock /*Security*/ ,
                                  ibActor: Actor[FibsPromiseMessage \/ IBMessage],
-                                 tickerId: Int, socket: EClientSocketLike) extends FibsPromise[CloseableStream[MarketTickDataResult]] {
+                                 tickerId: Int, socket: EClientSocketLike) extends FibsPromise[CloseableStream[MarketTickDataResult]] with Logging {
   private[this] val TickerId = tickerId
   val latch = new CountDownLatch(0) // don't need to block
   private[this] val RTVolumePattern = "(\\d+\\.?\\d*);(\\d+);(\\d+);(\\d+);(\\d+\\.?\\d*);(true|false)".r
   val actor = Actor[IBMessage] {
     case TickString(TickerId, RTVolume, v) ⇒ 
-      parseInput(v).foreach(t => queue.add(t.some))
+      parseInput(v).cata(some = t => queue.add(t.some),
+                         none = warn(s"error parsing tick data: $v"))
     case _ ⇒ ???
   }
   def parseInput(s: String) = s match {
@@ -35,7 +36,7 @@ class ReqMarketTickDataStreamHandler(security: Stock /*Security*/ ,
     case _ => none
   }
   val stringHandler: PartialFunction[IBMessage, Unit] = {
-    case m@TickString(tickerId, _, _) ⇒ actor ! m
+    case m@TickString(tickerId, RTVolume, _) ⇒ actor ! m
   }
   val patterns = List(stringHandler)
   private[this] val queue: BlockingQueue[Option[MarketTickDataResult]] =
