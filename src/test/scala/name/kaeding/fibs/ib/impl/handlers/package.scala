@@ -2,14 +2,22 @@ package name.kaeding.fibs.ib.impl
 
 import org.specs2._
 import org.scalacheck._
+import Gen._
 import Arbitrary._
 import scalaz._, Scalaz._
 import scala.util.Random.shuffle
 import com.github.nscala_time.time.Imports._
+import scala.math.BigDecimal
 
 import name.kaeding.fibs.ib.messages._
 
 package object handlers {
+  def mkSocket = new EClientSocketLike {
+    import scala.collection.mutable.MutableList
+    val calledWith: MutableList[Int] = MutableList()
+    def cancelMktData(tickerId: Int) = calledWith += tickerId
+  }
+  
   implicit def genPeriod = for {
     time <- arbitrary[Long]
     open <- arbitrary[Double]
@@ -30,8 +38,25 @@ package object handlers {
     count,
     wap,
     hasGaps)
+  
+  implicit def genTickData = for {
+    p <- posNum[Double]
+    s <- posNum[Int]
+    v <- posNum[Int]
+    t <- posNum[Long]
+    w <- posNum[Double]
+    f <- arbitrary[Boolean]
+  } yield MarketTickDataResult(
+      BigDecimal(p).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, 
+      s, 
+      v, 
+      t, 
+      BigDecimal(w).setScale(8, BigDecimal.RoundingMode.HALF_UP).toDouble, 
+      f)
 
   def genListPeriod = Gen.containerOf[List, HistoricalDataPeriod](genPeriod)
+  
+  def genListTickData = Gen.containerOf[List, MarketTickDataResult](genTickData)
 
   implicit def genHistoricalDataPackage = Arbitrary {
     for {
@@ -45,7 +70,22 @@ package object handlers {
         periods, 
         periods.map(periodToMessage(tickerId)) :+ finalMessage)
   }
+  
+  implicit def genTickDataPackage = Arbitrary {
+    for {
+      tickerId <- arbitrary[Int]
+      symbol <- arbitrary[String]
+      ticks <- genListTickData
+    } yield TickDataPackage(
+        tickerId, 
+        symbol, 
+        ticks, 
+        ticks.map(tickToMessage(tickerId)))
+  }
 
+  def tickToMessage(tickerId: Int)(t: MarketTickDataResult) =
+    TickString(tickerId, RTVolume, f"${t.lastPrice}%2.2f;${t.lastSize}%d;${t.timestamp}%d;${t.volume}%d;${t.wap}%8.8f;${t.singleTrade}")
+    
   def periodToMessage(tickerId: Int)(p: HistoricalDataPeriod) =
     HistoricalData(
       tickerId,

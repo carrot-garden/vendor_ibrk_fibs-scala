@@ -152,6 +152,21 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
       false)
     handler.get
   }
+  
+  def reqTickDataStream(
+    security: Stock // Security
+    ): CloseableStream[MarketTickDataResult] = {
+    val tickerId = IDGenerator.next
+    val handler = new ReqMarketTickDataStreamHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
+
+    ibActor ! RegisterFibsPromise(handler).left
+    clientSocket.reqMktData(
+      tickerId,
+      security.contract(0), //IDGenerator.next), 
+      "233",
+      false)
+    handler.get
+  }
 
   def cancelHistoricalData(tickerId: Int): Unit = {}
 

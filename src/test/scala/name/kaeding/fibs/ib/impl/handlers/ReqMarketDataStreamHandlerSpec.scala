@@ -11,7 +11,6 @@ import Arbitrary._
 import scalaz._, Scalaz._
 import scalaz.concurrent._
 import scala.util.Random.shuffle
-import scala.collection.mutable.MutableList
 import messages._
 import contract._
 import TickField._
@@ -37,11 +36,6 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
       //      "accept as much data as is given before the end token" ! partialDataSentEx ^
       //      "accept only data with the correct tickerId, ignoring other data" ! noisyPartialDataEx ^
       end
-
-  def mkSocket = new EClientSocketLike {
-    val calledWith: MutableList[Int] = MutableList()
-    def cancelMktData(tickerId: Int) = calledWith += tickerId
-  }
 
   def askOnlyEx = prop { (p: Double, s: Int, sym: String, tickerId: Int) ⇒
     val ibActor = IBActor()

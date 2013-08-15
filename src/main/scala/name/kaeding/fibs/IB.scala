@@ -1,12 +1,12 @@
 package name.kaeding.fibs
 
 import java.net.Socket
-import com.github.nscala_time.time.Imports.{order => _, _}
+import com.github.nscala_time.time.Imports.{ order ⇒ _, _ }
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter
-import com.ib.client.{ Order => IBOrder }
+import com.ib.client.{ Order ⇒ IBOrder }
 import com.ib.client.ScannerSubscription
-import scalaz.{Order => _, _}, Scalaz._
+import scalaz.{ Order ⇒ _, _ }, Scalaz._
 import scalaz.concurrent._
 import contract._
 import order._
@@ -14,103 +14,108 @@ import ib.messages._
 import name.kaeding.fibs.ib.impl.HasIBOrder
 
 trait IB {
-	def serverVersion(): Int
+  def serverVersion(): Int
 
-	def TwsConnectionTime(): String
+  def TwsConnectionTime(): String
 
-	def isConnected(): Boolean
+  def isConnected(): Boolean
 
-	def eConnect(socket: Socket, clientId: Int)
+  def connect(): Option[Promise[ConnectionResult]]
+  def disconnect(): Unit
 
-	def cancelScannerSubscription(tickerId: Int)
+  def cancelScannerSubscription(tickerId: Int)
 
-	def reqScannerParameters()
+  def reqScannerParameters()
 
-	def reqScannerSubscription(tickerId: Int,
-			subscription: ScannerSubscription)
+  def reqScannerSubscription(tickerId: Int,
+                             subscription: ScannerSubscription)
 
-	def reqMktDataSnapshot(
-	    security: Stock, // Security,
-		genericTickList: String): Promise[MarketDataResult]
-	
-	def reqMktDataStream(
-	    security: Stock, // Security,
-		genericTickList: String): CloseableStream[MarketDataResult]
+  def reqMktDataSnapshot(
+    security: Stock, // Security,
+    genericTickList: String): Promise[MarketDataResult]
 
-	def cancelHistoricalData(tickerId: Int)
+  def reqMktDataStream(
+    security: Stock, // Security,
+    genericTickList: String): CloseableStream[MarketDataResult]
 
-	def cancelRealTimeBars(tickerId: Int)
+  def reqTickDataStream(
+    security: Stock // Security,
+    ): CloseableStream[MarketTickDataResult]
 
-	def reqHistoricalData(
-	    contract: Stock, // Security,
-		endDateTime: DateTime, 
-		durationStr: Period, 
-		barSize: BarSize,
-		whatToShow: ShowMe, 
-		useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]]
+  def cancelHistoricalData(tickerId: Int)
 
-	def reqRealTimeBars(tickerId: Int, contract: Contract,
-			barSize: Int, whatToShow: String, useRTH: Boolean)
+  def cancelRealTimeBars(tickerId: Int)
 
-	def reqContractDetails(reqId: Int, contract: Contract)
+  def reqHistoricalData(
+    contract: Stock, // Security,
+    endDateTime: DateTime,
+    durationStr: Period,
+    barSize: BarSize,
+    whatToShow: ShowMe,
+    useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]]
 
-	def reqMktDepth(tickerId: Int, contract: Contract,
-			numRows: Int)
+  def reqRealTimeBars(tickerId: Int, contract: Contract,
+                      barSize: Int, whatToShow: String, useRTH: Boolean)
 
-	def cancelMktData(tickerId: Int)
+  def reqContractDetails(reqId: Int, contract: Contract)
 
-	def cancelMktDepth(tickerId: Int)
+  def reqMktDepth(tickerId: Int, contract: Contract,
+                  numRows: Int)
 
-	def exerciseOptions(tickerId: Int, contract: Contract,
-			exerciseAction: Int, exerciseQuantity: Int, account: String,
-			overrideNatural: Int)
+  def cancelMktData(tickerId: Int)
 
-	def placeOrder[S, O[S]<:Order[S]](order: O[S])(implicit hasOrder: HasIBOrder[S, O], sconv: S => Stock): Unit
+  def cancelMktDepth(tickerId: Int)
 
-	def reqAccountUpdates(subscribe: Boolean, acctCode: String)
+  def exerciseOptions(tickerId: Int, contract: Contract,
+                      exerciseAction: Int, exerciseQuantity: Int, account: String,
+                      overrideNatural: Int)
 
-	def reqExecutions(reqId: Int, filter: ExecutionFilter)
+  def placeOrder[S, O[S] <: Order[S]](order: O[S])(implicit hasOrder: HasIBOrder[S, O], sconv: S ⇒ Stock): Unit
 
-	def cancelOrder(id: Int)
+  def reqAccountUpdates(subscribe: Boolean, acctCode: String)
 
-	def reqOpenOrders()
+  def reqExecutions(reqId: Int, filter: ExecutionFilter)
 
-	def reqIds(numIds: Int)
+  def cancelOrder(id: Int)
 
-	def reqNewsBulletins(allMsgs: Boolean)
+  def reqOpenOrders()
 
-	def cancelNewsBulletins()
+  def reqIds(numIds: Int)
 
-	def setServerLogLevel(logLevel: Int)
+  def reqNewsBulletins(allMsgs: Boolean)
 
-	def reqAutoOpenOrders(bAutoBind: Boolean)
+  def cancelNewsBulletins()
 
-	def reqAllOpenOrders()
+  def setServerLogLevel(logLevel: Int)
 
-	def reqManagedAccts()
+  def reqAutoOpenOrders(bAutoBind: Boolean)
 
-	def requestFA(faDataType: Int)
+  def reqAllOpenOrders()
 
-	def replaceFA(faDataType: Int, xml: String)
+  def reqManagedAccts()
 
-	def currentTime(): Promise[Long]
+  def requestFA(faDataType: Int)
 
-	def reqFundamentalData(reqId: Int, contract: Contract,
-			reportType: String)
+  def replaceFA(faDataType: Int, xml: String)
 
-	def cancelFundamentalData(reqId: Int)
+  def currentTime(): Promise[Long]
 
-	def calculateImpliedVolatility(reqId: Int,
-			contract: Contract, optionPrice: Double, underPrice: Double)
+  def reqFundamentalData(reqId: Int, contract: Contract,
+                         reportType: String)
 
-	def cancelCalculateImpliedVolatility(reqId: Int)
+  def cancelFundamentalData(reqId: Int)
 
-	def calculateOptionPrice(reqId: Int, contract: Contract,
-			volatility: Double, underPrice: Double)
+  def calculateImpliedVolatility(reqId: Int,
+                                 contract: Contract, optionPrice: Double, underPrice: Double)
 
-	def cancelCalculateOptionPrice(reqId: Int)
+  def cancelCalculateImpliedVolatility(reqId: Int)
 
-	def reqGlobalCancel()
+  def calculateOptionPrice(reqId: Int, contract: Contract,
+                           volatility: Double, underPrice: Double)
 
-	def reqMarketDataType(marketDataType: Int)
+  def cancelCalculateOptionPrice(reqId: Int)
+
+  def reqGlobalCancel()
+
+  def reqMarketDataType(marketDataType: Int)
 }

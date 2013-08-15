@@ -49,6 +49,7 @@ object TickField {
     case 19 => TickHigh52Week
     case 20 => TickLow52Week
     case 45 => TickLastTimestamp
+    case 48 => RTVolume
     case 49 => TickHalted
     case x => println("unknown tick field: %d" format x); ???
   }
@@ -75,6 +76,7 @@ object TickHigh52Week extends TickField
 object TickLow52Week extends TickField
 object TickOpen extends TickField
 object TickLastTimestamp extends TickField
+object RTVolume extends TickField
 object TickHalted extends TickField
 
 sealed trait BarSize
@@ -170,6 +172,13 @@ sealed case class HistoricalDataPeriod(
     count: Int,
     wap: Double,
     hasGaps: Boolean)
+sealed case class MarketTickDataResult(
+    lastPrice: Double,
+    lastSize: Int,
+    volume: Int,
+    timestamp: Long,
+    wap: Double,
+    singleTrade: Boolean)
 
 sealed trait OrderType
 object OrderType {
