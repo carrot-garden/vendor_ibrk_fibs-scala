@@ -32,11 +32,14 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage]) 
 
   def tickEFP(tickerId: Int, tickType: Int, basisPoints: Double, formattedBasisPoints: String, impliedFuture: Double, holdDays: Int, futureExpiry: String, dividendImpact: Double, dividendsToExpiry: Double): Unit = ???
 
-  def orderStatus(orderId: Int, status: String, filled: Int, remaining: Int, avgFillPrice: Double, permId: Int, parentId: Int, lastFillPrice: Double, clientId: Int, whyHeld: String): Unit = ???
+  def orderStatus(orderId: Int, status: String, filled: Int, remaining: Int, avgFillPrice: Double, permId: Int, parentId: Int, lastFillPrice: Double, clientId: Int, whyHeld: String): Unit = 
+    println(s"orderStatus: $orderId, $status, $filled, $remaining, $avgFillPrice, $permId, $parentId, $lastFillPrice, $clientId, $whyHeld")
 
-  def openOrder(orderId: Int, contract: Contract, order: IBOrder, orderState: OrderState): Unit = ???
+  def openOrder(orderId: Int, contract: Contract, order: IBOrder, orderState: OrderState): Unit = 
+    println(s"openOrder: $orderId, ${contract.shows}, ${order.shows}, ${orderState.shows}")
 
-  def openOrderEnd(): Unit = ???
+  def openOrderEnd(): Unit = 
+    println("openOrderEnd")
 
   def updateAccountValue(key: String, value: String, currency: String, accountName: String): Unit = ???
 

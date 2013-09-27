@@ -3,7 +3,7 @@ package name.kaeding.fibs.ib
 import scalaz._, Scalaz._
 import com.github.nscala_time.time.Imports._
 
-package object impl {
+package object impl extends IBInstances {
   implicit def periodShows = new Show[Period] {
     override def shows(period: Period) = period match {
       case p if p.getYears == 1 => "1 Y"
