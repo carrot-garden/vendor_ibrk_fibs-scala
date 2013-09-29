@@ -61,5 +61,19 @@ trait HasIBOrderInstances {
       //TrailStopLimitOrder[Stock]
       ???
   }
+  implicit val MarketOnCloseIBOrder = new HasIBOrder[Stock, MarketOnCloseOrder] {
+    def ibOrder(a: MarketOnCloseOrder[Stock], orderId: Int) = {
+      val ret = new IBOrder
+      val orderType: messages.OrderType = MarketOnClose
+      ret.m_orderId = orderId
+      ret.m_action = a.action.shows
+      ret.m_orderType = orderType.shows
+      ret.m_totalQuantity = a.qty
+      ret.m_transmit = true
+      ret
+    }
+    def fromIB(o: IBOrder, s: Stock) =
+      //MarketOnCloseOrder[Stock]
+      ???
   }
 }

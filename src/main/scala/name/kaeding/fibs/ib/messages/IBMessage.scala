@@ -192,6 +192,7 @@ object OrderType {
       case TrailStop => "TRAIL"
       case TraitStopLimit => "TRAIL LIMIT"
       case Market => "MKT"
+      case MarketOnClose => "MOC"
     }
   }
 }
@@ -203,4 +204,5 @@ case object TrailMarketIfTouched extends OrderType
 case object TrailStop extends OrderType
 case object TraitStopLimit extends OrderType
 case object Market extends OrderType
+case object MarketOnClose extends OrderType
 // ... and more

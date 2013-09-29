@@ -48,3 +48,8 @@ sealed case class TrailStopLimitOrder[A: Contract](
     stop: Double,
     trail: Double,
     qty: Int) extends Order[A]
+
+sealed case class MarketOnCloseOrder[A: Contract](
+    action: OrderAction,
+    security: A,
+    qty: Int)

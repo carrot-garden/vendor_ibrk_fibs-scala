@@ -26,6 +26,13 @@ object TestData {
     qty <- posNum[Int]
   } yield TrailStopLimitOrder[Stock](action, Stock(sym), limitOffset, stop, trail, qty)
   
+  def genMarketOnCloseOrder = for {
+    sym <- arbitrary[String]
+    action <- Gen.oneOf(Buy, Sell, Short)
+    qty <- posNum[Int]
+  } yield MarketOnCloseOrder[Stock](action, Stock(sym), qty)
+  
   implicit def arbLimitStockOrder = Arbitrary(genLimitStockOrder)
   implicit def arbTrailStopLimitOrder = Arbitrary(genTrailStopLimitOrder)
+  implicit def arbMarketOnCloseOrder = Arbitrary(genMarketOnCloseOrder)
 }

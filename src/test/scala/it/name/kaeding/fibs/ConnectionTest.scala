@@ -33,13 +33,17 @@ object ConnectionTest extends App {
 //    aaplStream.as.map(println).take(250)
 //    aaplStream.close
     
-    println("Streaming AAPL ticks:")
-    val aaplStream = ib.reqTickDataStream(Stock("AAPL"))
-    aaplStream.as.map(println).take(25)
-    aaplStream.close
+//    println("Streaming AAPL ticks:")
+//    val aaplStream = ib.reqTickDataStream(Stock("AAPL"))
+//    aaplStream.as.map(println).take(25)
+//    aaplStream.close
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)
 //    ib.placeOrder(aaplOrder)
+//    Thread.sleep(3000)
+    
+    println("getting order status")
+    ib.reqAllOpenOrders
     Thread.sleep(3000)
   } finally {
     ib.disconnect()
