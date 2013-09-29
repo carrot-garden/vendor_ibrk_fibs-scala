@@ -17,5 +17,15 @@ object TestData {
     qty <- posNum[Int]
   } yield LimitOrder[Stock](action, Stock(sym), limit, qty)
   
+  def genTrailStopLimitOrder = for {
+    sym <- arbitrary[String]
+    limitOffset <- posNum[Double]
+    stop <- posNum[Double]
+    trail <- posNum[Double]
+    action <- Gen.oneOf(Buy, Sell, Short)
+    qty <- posNum[Int]
+  } yield TrailStopLimitOrder[Stock](action, Stock(sym), limitOffset, stop, trail, qty)
+  
   implicit def arbLimitStockOrder = Arbitrary(genLimitStockOrder)
+  implicit def arbTrailStopLimitOrder = Arbitrary(genTrailStopLimitOrder)
 }

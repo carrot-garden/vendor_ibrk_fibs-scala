@@ -222,7 +222,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     val contract: Contract = security.contract(0)
     val tickerId = IDGenerator.next
     clientSocket.placeOrder(orderId, contract, ibOrder)
-    // TODO: handle openOder response message
+    // TODO: handle openOrder response message
   }
 
   def reqAccountUpdates(subscribe: Boolean, acctCode: String): Unit = {}
@@ -243,7 +243,9 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
   def reqAutoOpenOrders(bAutoBind: Boolean): Unit = {}
 
-  def reqAllOpenOrders(): Unit = {}
+  def reqAllOpenOrders(): Unit = {
+    clientSocket.reqAllOpenOrders()
+  }
 
   def reqManagedAccts(): Unit = {}
 

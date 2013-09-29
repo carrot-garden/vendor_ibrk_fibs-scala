@@ -5,9 +5,19 @@ import scalaz._, Scalaz._
 import contract._
 
 trait Order[A] {
-//  def id: Int
   def security: A
 }
+
+sealed case class OrderState(
+    status: String,
+    initMargin: String,
+    mainMargin: String,
+    equityWithLoan: String,
+    commission: Double,
+    minCommssion: Double,
+    maxCommission: Double,
+    commissionCurrency: String,
+    warningText: String)
 
 sealed trait OrderAction
 object OrderAction {
@@ -26,17 +36,15 @@ case object Short extends OrderAction
 sealed trait OrderType
 
 sealed case class LimitOrder[A: Contract](
-//    id: Int,
     action: OrderAction,
     security: A,
     limit: Double,
     qty: Int) extends Order[A]
 
 sealed case class TrailStopLimitOrder[A: Contract](
-//    id: Int,
     action: OrderAction,
     security: A,
-    limit: Double,
+    limitOffset: Double,
     stop: Double,
     trail: Double,
     qty: Int) extends Order[A]
