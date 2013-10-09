@@ -4,8 +4,10 @@ package order
 import scalaz._, Scalaz._
 import contract._
 
-trait Order[A] {
+trait Order[+A] {
   def security: A
+  def action: OrderAction
+  def qty: Int
 }
 
 sealed case class OrderState(
@@ -35,13 +37,13 @@ case object Short extends OrderAction
 
 sealed trait OrderType
 
-sealed case class LimitOrder[A: Contract](
+sealed case class LimitOrder[+A: Contract](
     action: OrderAction,
     security: A,
     limit: Double,
     qty: Int) extends Order[A]
 
-sealed case class TrailStopLimitOrder[A: Contract](
+sealed case class TrailStopLimitOrder[+A: Contract](
     action: OrderAction,
     security: A,
     limitOffset: Double,
@@ -49,13 +51,13 @@ sealed case class TrailStopLimitOrder[A: Contract](
     trail: Double,
     qty: Int) extends Order[A]
 
-sealed case class TrailStopOrder[A: Contract](
+sealed case class TrailStopOrder[+A: Contract](
     action: OrderAction,
     security: A,
     trail: Double,
     qty: Int) extends Order[A]
 
-sealed case class MarketOnCloseOrder[A: Contract](
+sealed case class MarketOnCloseOrder[+A: Contract](
     action: OrderAction,
     security: A,
-    qty: Int)
+    qty: Int) extends Order[A]

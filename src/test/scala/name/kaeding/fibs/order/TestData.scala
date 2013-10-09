@@ -7,6 +7,8 @@ import Gen._
 import Arbitrary._
 import scalaz._, Scalaz._
 import contract.Stock
+import order.{Order => FibsOrder, _}
+import ib.messages._
 
 object TestData {
 
@@ -39,8 +41,26 @@ object TestData {
     qty <- posNum[Int]
   } yield MarketOnCloseOrder[Stock](action, Stock(sym), qty)
   
+  def genOrder: Gen[FibsOrder[Stock]] = 
+    oneOf(genTrailStopLimitOrder, genTrailStopOrder, genMarketOnCloseOrder, genLimitStockOrder)
+    
+  def genListOfOrders: Gen[List[FibsOrder[Stock]]] = listOf(genOrder)
+  
+  def genNEListOfOrders: Gen[NonEmptyList[FibsOrder[Stock]]] = {
+    for {
+      h <- genOrder
+      t <- genListOfOrders
+    } yield NonEmptyList.nel(h, t)
+  }
+  
+  def genOcaType: Gen[OCAType] = 
+    oneOf(List(CancelOnFillWithBlock, ReduceOnFillWithBlock, ReduceOnFillWithoutBlock))
+  
   implicit def arbLimitStockOrder = Arbitrary(genLimitStockOrder)
   implicit def arbTrailStopLimitOrder = Arbitrary(genTrailStopLimitOrder)
   implicit def arbTrailStopOrder = Arbitrary(genTrailStopOrder)
   implicit def arbMarketOnCloseOrder = Arbitrary(genMarketOnCloseOrder)
+  implicit def arbListOfOrders = Arbitrary(genListOfOrders)
+  implicit def arbNEListOfOrders = Arbitrary(genNEListOfOrders)
+  implicit def arbOcaType = Arbitrary(genOcaType)
 }

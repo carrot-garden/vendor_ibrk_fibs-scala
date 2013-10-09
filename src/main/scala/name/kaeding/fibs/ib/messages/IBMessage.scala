@@ -179,6 +179,18 @@ sealed case class MarketTickDataResult(
     timestamp: Long,
     wap: Double,
     singleTrade: Boolean)
+    
+sealed trait OCAType
+object CancelOnFillWithBlock extends OCAType
+object ReduceOnFillWithBlock extends OCAType
+object ReduceOnFillWithoutBlock extends OCAType
+object OCAType {
+  def code(t: OCAType): Int = t match {
+    case CancelOnFillWithBlock => 1
+    case ReduceOnFillWithBlock => 2
+    case ReduceOnFillWithoutBlock => 3
+  }
+}
 
 sealed trait OrderType
 object OrderType {

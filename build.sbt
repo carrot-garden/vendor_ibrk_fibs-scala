@@ -48,7 +48,7 @@ libraryDependencies ++= Seq (
   "org.scalaz" %% "scalaz-core" % "7.0.3",
   "org.scalaz" %% "scalaz-concurrent" % "7.0.3",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-  "org.specs2" %% "specs2" % "1.12.3" % "test",
+  "org.specs2" %% "specs2" % "2.2.3" % "test",
   "junit" % "junit" % "4.8.1" % "test"
 )
 
