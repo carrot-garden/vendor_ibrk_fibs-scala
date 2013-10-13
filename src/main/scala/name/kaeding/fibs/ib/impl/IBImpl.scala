@@ -5,6 +5,7 @@ package impl
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.CountDownLatch
+import java.util.UUID
 import scala.collection.mutable.MutableList
 import scalaz.{Order => _, _}, Scalaz._
 import scalaz.concurrent._
@@ -15,7 +16,6 @@ import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
 import com.github.nscala_time.time.Imports.{order => _, _}
 import grizzled.slf4j.Logging
-
 import name.kaeding.fibs.IB
 import messages._
 import contract._
@@ -225,7 +225,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
   }
   
   def placeOCAOrders(ocaGroup: OCAGroup, ocaType: OCAType = CancelOnFillWithBlock): Unit = {
-    val ocaName = s"fibs-oca-${IDGenerator.next}"
+    val ocaName = s"fibs-oca-${UUID.randomUUID.toString}"
     ocaGroup.ibOrders(ocaName, ocaType)
     ocaGroup.ibOrders(ocaName, ocaType).map(soFn => {
       val orderId = nextOrderId
