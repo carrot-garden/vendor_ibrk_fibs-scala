@@ -44,6 +44,6 @@ class TrailStopOrderSpec extends Specification with ScalaCheck { def is =
   def exOrderType = prop { (o: TrailStopOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_orderType must_== "TRAIL LIMIT"
+    ibo.m_orderType must_== "TRAIL"
   }
 }
