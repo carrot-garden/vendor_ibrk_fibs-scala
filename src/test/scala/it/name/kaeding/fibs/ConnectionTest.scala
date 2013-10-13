@@ -4,9 +4,9 @@ import name.kaeding.fibs.ib.impl.IBImpl
 import name.kaeding.fibs.contract.Stock
 import name.kaeding.fibs.ib.messages._
 import com.github.nscala_time.time.Imports._
-import name.kaeding.fibs.order.LimitOrder
-import name.kaeding.fibs.order.Buy
+import name.kaeding.fibs.order._
 import java.util.TimeZone
+import name.kaeding.fibs.ib.impl.OCA
 
 object ConnectionTest extends App {
   val ib = new IBImpl("localhost", 7496, Some(33))
@@ -40,11 +40,29 @@ object ConnectionTest extends App {
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)
 //    ib.placeOrder(aaplOrder)
-//    Thread.sleep(3000)
+//    Thread.sleep(30000)
     
-    println("getting order status")
-    ib.reqAllOpenOrders
-    Thread.sleep(3000)
+//    val aaplTrailStopOrder = TrailStopOrder(Sell, Stock("AAPL"), 5.00, 100)
+//    ib.placeOrder(aaplTrailStopOrder)
+//    Thread.sleep(30000)
+    
+//    val aaplTrailStopLimitOrder = TrailStopLimitOrder(Sell, Stock("AAPL"), 0.10, 15.00, 5.00, 100)
+//    ib.placeOrder(aaplTrailStopLimitOrder)
+//    Thread.sleep(30000)
+    
+//    val aaplMoCOrder = MarketOnCloseOrder(Buy, Stock("AAPL"), 100)
+//    ib.placeOrder(aaplMoCOrder)
+//    Thread.sleep(30000)
+    
+    val aaplTrailStopOrderOCA = TrailStopOrder(Sell, Stock("AAPL"), 5.00, 100)
+    val aaplMoCOrderOCA = MarketOnCloseOrder(Buy, Stock("AAPL"), 100)
+    val ocaGroup = aaplTrailStopOrderOCA :: aaplMoCOrderOCA :: OCA
+    ib.placeOCAOrders(ocaGroup, ReduceOnFillWithBlock)
+    Thread.sleep(30000)
+    
+//    println("getting order status")
+//    ib.reqAllOpenOrders
+//    Thread.sleep(3000)
   } finally {
     ib.disconnect()
     println("is connected should be false: %s" format ib.isConnected)

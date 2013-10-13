@@ -50,7 +50,7 @@ trait HasIBOrderInstances {
   implicit val TrailStopLimitOrderIBOrder: HasIBOrder[Stock, TrailStopLimitOrder] = new HasIBOrder[Stock, TrailStopLimitOrder] {
     def ibOrder(a: TrailStopLimitOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
-      val orderType: messages.OrderType = TraitStopLimit
+      val orderType: messages.OrderType = TrailStopLimit
       ret.m_orderId = orderId
       ret.m_action = a.action.shows
       ret.m_auxPrice = a.trail
@@ -73,7 +73,7 @@ trait HasIBOrderInstances {
   implicit val TrailStopOrderIBOrder: HasIBOrder[Stock, TrailStopOrder] = new HasIBOrder[Stock, TrailStopOrder] {
     def ibOrder(a: TrailStopOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
-      val orderType: messages.OrderType = TraitStopLimit
+      val orderType: messages.OrderType = TrailStop
       ret.m_orderId = orderId
       ret.m_action = a.action.shows
       ret.m_auxPrice = a.trail
@@ -104,15 +104,16 @@ trait HasIBOrderInstances {
 
 }
 trait OCAGroup {
-  def ibOrders(ocaGroupName: String, ocaType: OCAType): List[Int ⇒ IBOrder]
+  def ibOrders(ocaGroupName: String, ocaType: OCAType): List[Int ⇒ (Stock, IBOrder)]
   def orders: List[_ <: FibsOrder[_]]
 
-  def ::[S: Contract, A[S] <: FibsOrder[S]](o: A[S])(implicit IBOrder: HasIBOrder[S, A]): OCAGroup = new OCAGroup {
+  def ::[S: Contract, A[S] <: FibsOrder[S]](o: A[S])(implicit IBOrder: HasIBOrder[S, A], sconv: S => Stock): OCAGroup = new OCAGroup {
     override def ibOrders(ocaGroupName: String, ocaType: OCAType) = ((id: Int) ⇒ {
         val ibo = IBOrder.ibOrder(o, id)
         ibo.m_ocaGroup = ocaGroupName
         ibo.m_ocaType = OCAType.code(ocaType)
-        ibo
+        val security: Stock = o.security
+        (security, ibo)
       }) :: self.ibOrders(ocaGroupName, ocaType)
     override def orders = o :: self.orders
   }

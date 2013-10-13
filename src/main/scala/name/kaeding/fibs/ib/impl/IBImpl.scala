@@ -133,7 +133,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(0), //IDGenerator.next), 
+      security.contract(IDGenerator.next), 
       genericTickList,
       true)
     handler.promise
@@ -148,7 +148,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(0), //IDGenerator.next), 
+      security.contract(IDGenerator.next), 
       genericTickList,
       false)
     handler.get
@@ -163,7 +163,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(0), //IDGenerator.next), 
+      security.contract(IDGenerator.next), 
       "233",
       false)
     handler.get
@@ -191,7 +191,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
       val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss")
       clientSocket.reqHistoricalData(
         tickerId,
-        security.contract(0),
+        security.contract(IDGenerator.next),
         fmt.print(endDateTime),
         duration.shows,
         barSize.shows,
@@ -219,10 +219,20 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     val orderId = nextOrderId
     val ibOrder: IBOrder = hasOrder.ibOrder(order, orderId)
     val security: Stock = order.security
-    val contract: Contract = security.contract(0)
-    val tickerId = IDGenerator.next
+    val contract: Contract = security.contract(IDGenerator.next)
     clientSocket.placeOrder(orderId, contract, ibOrder)
     // TODO: handle openOrder response message
+  }
+  
+  def placeOCAOrders(ocaGroup: OCAGroup, ocaType: OCAType = CancelOnFillWithBlock): Unit = {
+    val ocaName = s"fibs-oca-${IDGenerator.next}"
+    ocaGroup.ibOrders(ocaName, ocaType)
+    ocaGroup.ibOrders(ocaName, ocaType).map(soFn => {
+      val orderId = nextOrderId
+      val (security, order) = soFn(orderId)
+      clientSocket.placeOrder(orderId, security.contract(IDGenerator.next), order)    
+    })
+    // TODO: handle openOrder response messages
   }
 
   def reqAccountUpdates(subscribe: Boolean, acctCode: String): Unit = {}

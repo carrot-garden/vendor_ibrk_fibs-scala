@@ -11,7 +11,7 @@ import scalaz.concurrent._
 import contract._
 import order._
 import ib.messages._
-import name.kaeding.fibs.ib.impl.HasIBOrder
+import name.kaeding.fibs.ib.impl._
 
 trait IB {
   def serverVersion(): Int
@@ -71,6 +71,8 @@ trait IB {
                       overrideNatural: Int)
 
   def placeOrder[S, O[S] <: Order[S]](order: O[S])(implicit hasOrder: HasIBOrder[S, O], sconv: S ⇒ Stock): Unit
+  
+  def placeOCAOrders(ocaGroup: OCAGroup, ocaType: OCAType = CancelOnFillWithBlock): Unit
 
   def reqAccountUpdates(subscribe: Boolean, acctCode: String)
 
