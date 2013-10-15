@@ -133,7 +133,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(IDGenerator.next), 
+      security.contract, 
       genericTickList,
       true)
     handler.promise
@@ -148,7 +148,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(IDGenerator.next), 
+      security.contract, 
       genericTickList,
       false)
     handler.get
@@ -163,7 +163,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ibActor ! RegisterFibsPromise(handler).left
     clientSocket.reqMktData(
       tickerId,
-      security.contract(IDGenerator.next), 
+      security.contract, 
       "233",
       false)
     handler.get
@@ -191,7 +191,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
       val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss")
       clientSocket.reqHistoricalData(
         tickerId,
-        security.contract(IDGenerator.next),
+        security.contract,
         fmt.print(endDateTime),
         duration.shows,
         barSize.shows,
@@ -219,7 +219,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     val orderId = nextOrderId
     val ibOrder: IBOrder = hasOrder.ibOrder(order, orderId)
     val security: Stock = order.security
-    val contract: Contract = security.contract(IDGenerator.next)
+    val contract: Contract = security.contract
     clientSocket.placeOrder(orderId, contract, ibOrder)
     // TODO: handle openOrder response message
   }
@@ -230,7 +230,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
     ocaGroup.ibOrders(ocaName, ocaType).map(soFn => {
       val orderId = nextOrderId
       val (security, order) = soFn(orderId)
-      clientSocket.placeOrder(orderId, security.contract(IDGenerator.next), order)    
+      clientSocket.placeOrder(orderId, security.contract, order)    
     })
     // TODO: handle openOrder response messages
   }

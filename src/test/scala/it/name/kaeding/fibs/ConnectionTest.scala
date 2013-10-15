@@ -1,5 +1,7 @@
 package it.name.kaeding.fibs
 
+import scalaz._, Scalaz._
+
 import name.kaeding.fibs.ib.impl.IBImpl
 import name.kaeding.fibs.contract.Stock
 import name.kaeding.fibs.ib.messages._
@@ -7,6 +9,8 @@ import com.github.nscala_time.time.Imports._
 import name.kaeding.fibs.order._
 import java.util.TimeZone
 import name.kaeding.fibs.ib.impl.OCA
+import scalaz.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 object ConnectionTest extends App {
   val ib = new IBImpl("localhost", 7496, Some(33))
@@ -20,8 +24,13 @@ object ConnectionTest extends App {
     println("connectionTime: %s" format ib.TwsConnectionTime)
     val currentTime = ib.currentTime
     println("currentTime: %d" format currentTime.get)
-//    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
-//    println("aapl: %s" format aapl.get)
+    
+    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
+    println("aapl: %s" format aapl.get)
+    val bby = ib.reqMktDataSnapshot(Stock("BBY"), "")
+    println("bby: %s" format bby.get)
+    val aa = ib.reqMktDataSnapshot(Stock("AA"), "")
+    println("aa: %s" format aa.get)
     
 //    val periodEnd = new LocalDate("2013-08-08").toDateTimeAtStartOfDay(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/New_York"))).withHourOfDay(10).withMinuteOfHour(30)
 //    val hist = ib.reqHistoricalData(Stock("AAPL"), (periodEnd - 30.minutes), 30.minutes, BarSize1Sec, ShowMeTrades, true)
@@ -33,10 +42,15 @@ object ConnectionTest extends App {
 //    aaplStream.as.map(println).take(250)
 //    aaplStream.close
     
-//    println("Streaming AAPL ticks:")
+    println("Streaming AAPL ticks:")
 //    val aaplStream = ib.reqTickDataStream(Stock("AAPL"))
-//    aaplStream.as.map(println).take(25)
+    val aaStream = ib.reqTickDataStream(Stock("AA"))
+    import ExecutionContext.Implicits.global
+    (Future(1/*aaplStream.as.map(println).take(25)*/) |@|
+     Future(aaStream.as.map(println).take(25)))((_, _) => ())
 //    aaplStream.close
+    aaStream.close
+    Thread.sleep(30000)
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)
 //    ib.placeOrder(aaplOrder)
@@ -54,11 +68,11 @@ object ConnectionTest extends App {
 //    ib.placeOrder(aaplMoCOrder)
 //    Thread.sleep(30000)
     
-    val aaplTrailStopOrderOCA = TrailStopOrder(Sell, Stock("AAPL"), 5.00, 100)
-    val aaplMoCOrderOCA = MarketOnCloseOrder(Buy, Stock("AAPL"), 100)
-    val ocaGroup = aaplTrailStopOrderOCA :: aaplMoCOrderOCA :: OCA
-    ib.placeOCAOrders(ocaGroup, ReduceOnFillWithBlock)
-    Thread.sleep(30000)
+//    val aaplTrailStopOrderOCA = TrailStopOrder(Sell, Stock("AAPL"), 5.00, 100)
+//    val aaplMoCOrderOCA = MarketOnCloseOrder(Buy, Stock("AAPL"), 100)
+//    val ocaGroup = aaplTrailStopOrderOCA :: aaplMoCOrderOCA :: OCA
+//    ib.placeOCAOrders(ocaGroup, ReduceOnFillWithBlock)
+//    Thread.sleep(30000)
     
 //    println("getting order status")
 //    ib.reqAllOpenOrders

@@ -5,11 +5,11 @@ import scalaz._, Scalaz._
 import com.ib.client.{ Contract => IBContract }
 
 trait Contract[A] {
-  def contract(a: A): Int => IBContract
+  def contract(a: A): IBContract
 }
 trait ContractOps[F] extends syntax.Ops[F] {
   implicit def F: Contract[F]
-  final def contract: Int => IBContract = F.contract(self)
+  final def contract: IBContract = F.contract(self)
 }
 trait ToContractOps {
   implicit def ToContractOps[F](v: F)(implicit F0: Contract[F]) = 

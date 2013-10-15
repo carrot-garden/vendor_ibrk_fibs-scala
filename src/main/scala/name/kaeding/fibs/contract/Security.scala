@@ -12,23 +12,14 @@ case class Stock(
   
 object Stock {
   implicit object stockContract extends Contract[Stock] {
-    def contract(s: Stock) = contractId => 
-      new IBContract(
-          contractId,
-          s.symbol,
-          "STK",
-          "", // expiry
-          0.0, // strike
-          "", // right
-          "", // multiplier
-          "SMART",
-          s.currency,
-          "", // localSymbol
-          new java.util.Vector(), // comboLegs
-          "ISLAND", // primaryExchange
-          false, // includeExpired
-          s.securityId.map(s => s.code).getOrElse(""),
-          s.securityId.map(_.shows).getOrElse(""))
+    def contract(s: Stock) = { 
+      val ret = new IBContract()
+      ret.m_symbol = s.symbol
+      ret.m_secType = "STK"
+      ret.m_exchange = "SMART"
+      ret.m_currency = "USD"
+      ret
+    }
   }
 }
 
