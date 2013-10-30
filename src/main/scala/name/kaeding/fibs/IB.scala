@@ -55,7 +55,13 @@ trait IB {
     useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]]
 
   def reqRealTimeBars(tickerId: Int, contract: Contract,
-                      barSize: Int, whatToShow: String, useRTH: Boolean)
+                      barSize: Int, whatToShow: String, 
+                      useRTH: Boolean): CloseableStream[RealTimeBar]
+  
+  def reqRealTimeBarsFromTrades(
+      contract: Stock, // Security,
+      barSize: Int, 
+      useRTH: Boolean): CloseableStream[RealTimeBar]
 
   def reqContractDetails(reqId: Int, contract: Contract)
 

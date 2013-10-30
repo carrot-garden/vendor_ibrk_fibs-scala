@@ -140,6 +140,17 @@ sealed case class CommissionReport(
   realizedPL: Double,
   totalYield: Double,
   yieldRedemptionDate: DateTime) extends IBMessage
+  
+sealed case class RealTimeBarResp(
+  reqId: Int,
+  time: Long,
+  open: Double,
+  high: Double,
+  low: Double,
+  close: Double,
+  volume: Long,
+  count: Int,
+  wap: Double) extends IBMessage
 
 // Responses
 
@@ -172,6 +183,15 @@ sealed case class HistoricalDataPeriod(
   count: Int,
   wap: Double,
   hasGaps: Boolean)
+sealed case class RealTimeBar(
+  time: DateTime,
+  open: Double,
+  high: Double,
+  low: Double,
+  close: Double,
+  volume: Long,
+  count: Int,
+  wap: Double)
 sealed case class MarketTickDataResult(
   lastPrice: Double,
   lastSize: Int,

@@ -82,7 +82,8 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage]) 
 
   def scannerDataEnd(reqId: Int): Unit = ???
 
-  def realtimeBar(reqId: Int, time: Long, open: Double, high: Double, low: Double, close: Double, volume: Long, wap: Double, count: Int): Unit = ???
+  def realtimeBar(reqId: Int, time: Long, open: Double, high: Double, low: Double, close: Double, volume: Long, wap: Double, count: Int): Unit = 
+    ibActor ! RealTimeBarResp(reqId, time, open, high, low, close, volume, count, wap).right
 
   def currentTime(time: Long): Unit = ibActor ! CurrentTime(time).right
 

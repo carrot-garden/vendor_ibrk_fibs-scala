@@ -202,7 +202,25 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
   }
 
-  def reqRealTimeBars(tickerId: Int, contract: Contract, barSize: Int, whatToShow: String, useRTH: Boolean): Unit = {}
+  def reqRealTimeBars(tickerId: Int, contract: Contract, barSize: Int, whatToShow: String, useRTH: Boolean): CloseableStream[RealTimeBar] = ???
+  
+  def reqRealTimeBarsFromTrades(security: Stock, // Security,
+                      barSize: Int, useRTH: Boolean): CloseableStream[RealTimeBar] = {
+    val tickerId = IDGenerator.next
+    val handler = new ReqRealTimeBarsHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
+
+    ibActor ! RegisterFibsPromise(handler).left
+    clientSocket.reqRealTimeBars(
+      tickerId,
+      security.contract, 
+      barSize, // this had better be 5
+      "TRADES",
+      useRTH)
+    handler.get
+  }
+  
+  def reqRealTimeBarsFromTradesFromTicks(contract: Contract,
+                      barSize: Int, useRTH: Boolean): CloseableStream[RealTimeBar] = ??? // TODO
 
   def reqContractDetails(reqId: Int, contract: Contract): Unit = {}
 

@@ -25,12 +25,14 @@ object ConnectionTest extends App {
     val currentTime = ib.currentTime
     println("currentTime: %d" format currentTime.get)
     
-    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
-    println("aapl: %s" format aapl.get)
-    val bby = ib.reqMktDataSnapshot(Stock("BBY"), "")
-    println("bby: %s" format bby.get)
-    val aa = ib.reqMktDataSnapshot(Stock("AA"), "")
-    println("aa: %s" format aa.get)
+//    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
+//    println("aapl: %s" format aapl.get)
+//    val bby = ib.reqMktDataSnapshot(Stock("BBY"), "")
+//    println("bby: %s" format bby.get)
+//    val aa = ib.reqMktDataSnapshot(Stock("AA"), "")
+//    println("aa: %s" format aa.get)
+    val stp = ib.reqMktDataSnapshot(Stock("STP"), "")
+    println("stp: %s" format stp.get)
     
 //    val periodEnd = new LocalDate("2013-08-08").toDateTimeAtStartOfDay(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/New_York"))).withHourOfDay(10).withMinuteOfHour(30)
 //    val hist = ib.reqHistoricalData(Stock("AAPL"), (periodEnd - 30.minutes), 30.minutes, BarSize1Sec, ShowMeTrades, true)
@@ -42,14 +44,34 @@ object ConnectionTest extends App {
 //    aaplStream.as.map(println).take(250)
 //    aaplStream.close
     
-    println("Streaming AAPL ticks:")
-//    val aaplStream = ib.reqTickDataStream(Stock("AAPL"))
-    val aaStream = ib.reqTickDataStream(Stock("AA"))
-    import ExecutionContext.Implicits.global
-    (Future(1/*aaplStream.as.map(println).take(25)*/) |@|
-     Future(aaStream.as.map(println).take(25)))((_, _) => ())
-//    aaplStream.close
-    aaStream.close
+//    println("Streaming AAPL ticks:")
+//    val stpTickStream = ib.reqTickDataStream(Stock("STP"))
+//    val exelTickStream = ib.reqTickDataStream(Stock("EXEL"))
+//    import ExecutionContext.Implicits.global
+//    val fut = ((Future(stpTickStream.as.map(println).take(25)) |@|
+//     Future(exelTickStream.as.map(println).take(25)))((_, _) => ()) >>
+//    Future { 
+//      stpTickStream.close
+//      exelTickStream.close
+//    })
+//    fut.run
+    
+//    println("Streaming STP ticks:")
+//    val stpTickStream = ib.reqTickDataStream(Stock("STP"))
+//    stpTickStream.as.map(println).take(25)
+//    stpTickStream.close
+//    Thread.sleep(30000)
+    
+    println("Streaming IMGN bars:")
+    val imgnBarStream = ib.reqRealTimeBarsFromTrades(Stock("IMGN"), 5, false)
+    imgnBarStream.as.map(println).take(25)
+    imgnBarStream.close
+    Thread.sleep(30000)
+    
+    println("Streaming IMGN ticks:")
+    val imgnTickStream = ib.reqTickDataStream(Stock("IMGN"))
+    imgnTickStream.as.map(println).take(25)
+    imgnTickStream.close
     Thread.sleep(30000)
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)

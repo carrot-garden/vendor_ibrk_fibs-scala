@@ -14,8 +14,10 @@ import name.kaeding.fibs.ib.messages._
 package object handlers {
   def mkSocket = new EClientSocketLike {
     import scala.collection.mutable.MutableList
-    val calledWith: MutableList[Int] = MutableList()
-    def cancelMktData(tickerId: Int) = calledWith += tickerId
+    val cancelMktDataCalledWith: MutableList[Int] = MutableList()
+    val cancelRealTimeBarsCalledWith: MutableList[Int] = MutableList()
+    def cancelMktData(tickerId: Int) = cancelMktDataCalledWith += tickerId
+    def cancelRealTimeBars(tickerId: Int) = cancelRealTimeBarsCalledWith += tickerId
   }
   
   implicit def genPeriod = for {
@@ -81,6 +83,22 @@ package object handlers {
         symbol, 
         ticks, 
         ticks.map(tickToMessage(tickerId)))
+  }
+  
+  implicit def genRealTimeBarsPackage = Arbitrary {
+    def historicalToLiveBar(h: HistoricalDataPeriod) = RealTimeBar(
+        h.time, h.open, h.high, h.low, h.close, h.volume, h.count, h.wap)
+    def historicalToLiveBarMessage(tickerId: Int)(h: HistoricalDataPeriod) =
+      RealTimeBarResp(tickerId, h.time.getMillis, h.open, h.high, h.low, h.close, h.volume, h.count, h.wap)
+    for {
+      tickerId <- arbitrary[Int]
+      symbol <- arbitrary[String]
+      periods <- genListPeriod
+    } yield RealTimeBarsPackage(
+        tickerId,
+        symbol,
+        periods.map(historicalToLiveBar),
+        periods.map(historicalToLiveBarMessage(tickerId)))
   }
 
   def tickToMessage(tickerId: Int)(t: MarketTickDataResult) =
