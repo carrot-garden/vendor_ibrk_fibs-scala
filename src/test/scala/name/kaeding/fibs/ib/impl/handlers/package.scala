@@ -89,7 +89,7 @@ package object handlers {
     def historicalToLiveBar(h: HistoricalDataPeriod) = RealTimeBar(
         h.time, h.open, h.high, h.low, h.close, h.volume, h.count, h.wap)
     def historicalToLiveBarMessage(tickerId: Int)(h: HistoricalDataPeriod) =
-      RealTimeBarResp(tickerId, h.time.getMillis, h.open, h.high, h.low, h.close, h.volume, h.count, h.wap)
+      RealTimeBarResp(tickerId, h.time.getMillis / 1000, h.open, h.high, h.low, h.close, h.volume, h.count, h.wap)
     for {
       tickerId <- arbitrary[Int]
       symbol <- arbitrary[String]
