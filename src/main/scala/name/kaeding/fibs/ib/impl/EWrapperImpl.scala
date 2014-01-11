@@ -2,12 +2,11 @@ package name.kaeding.fibs
 package ib
 package impl
 
-import com.ib.client.{Order => IBOrder, CommissionReport => IBCommissionReport, _}
+import com.ib.client.{Order => IBOrder, CommissionReport => IBCommissionReport, MarketDataType => IBMarketDataType, _}
 import scalaz._, Scalaz._
 import scalaz.concurrent._
 import com.github.nscala_time.time.Imports._
 import messages._
-import name.kaeding.fibs.ib.messages.IBMessage
 
 sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage])  extends EWrapper {
 
@@ -94,7 +93,8 @@ sealed case class EWrapperImpl(ibActor: Actor[FibsPromiseMessage \/ IBMessage]) 
   def tickSnapshotEnd(reqId: Int): Unit = 
     ibActor ! TickSnapshotEnd(reqId).right
 
-  def marketDataType(reqId: Int, marketDataType: Int): Unit = ???
+  def marketDataType(reqId: Int, marketDataType: Int): Unit =
+    ibActor ! MarketDataTypeMsg(reqId, MarketDataType.read(marketDataType)).right
 
   val yyyymmddFormat = DateTimeFormat.forPattern("yyyyMMdd")
   def commissionReport(r: IBCommissionReport): Unit = 

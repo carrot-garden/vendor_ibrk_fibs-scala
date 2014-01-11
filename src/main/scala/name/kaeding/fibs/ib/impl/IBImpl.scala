@@ -3,7 +3,7 @@ package ib
 package impl
 
 import java.net.Socket
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import java.util.concurrent.CountDownLatch
 import java.util.UUID
 import scala.collection.mutable.MutableList
@@ -59,12 +59,13 @@ sealed trait FibsPromiseMessage
 case class RegisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
 case class UnregisterFibsPromise(p: FibsPromise[_]) extends FibsPromiseMessage
 
-class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
+class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataType: MarketDataType = FrozenDataAfterHours) extends IB {
   val clientIdValue = clientId.getOrElse(IDGenerator.next)
   val ibActor = IBActor()
   val ewrapper = new EWrapperImpl(ibActor)
   val clientSocket = new EClientSocket(ewrapper)
   private[this] var orderIdGenerator: Option[AtomicInteger] = None
+  private[this] val marketDataTypeVal: AtomicReference[MarketDataType] = new AtomicReference()
   def nextOrderId: Int = orderIdGenerator.map(_.getAndIncrement).getOrElse(-1)
   implicit val s = Strategy.DefaultExecutorService
 
@@ -97,6 +98,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
       ibActor ! RegisterFibsPromise(handler).left
       clientSocket.eConnect(host, port, clientIdValue)
+      reqMarketDataType(marketDataType)
       handler.promise.some
     } else {
       none
@@ -316,7 +318,12 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None) extends IB {
 
   def reqGlobalCancel(): Unit = {}
 
-  def reqMarketDataType(marketDataType: Int): Unit = {}
+  def reqMarketDataType(newMarketDataType: MarketDataType): Unit = {
+    import MarketDataType._
+    val prev = marketDataTypeVal.getAndSet(newMarketDataType)
+    if (newMarketDataType =/= prev)
+    	clientSocket.reqMarketDataType(MarketDataType.code(newMarketDataType))
+  }
 
 }
 

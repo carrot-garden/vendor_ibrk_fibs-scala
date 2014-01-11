@@ -125,5 +125,5 @@ trait IB {
 
   def reqGlobalCancel()
 
-  def reqMarketDataType(marketDataType: Int)
+  def reqMarketDataType(marketDataType: MarketDataType): Unit
 }

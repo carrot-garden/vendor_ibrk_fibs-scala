@@ -23,6 +23,8 @@ sealed case class HistoricalDataError(tickerId: Int, errorCode: Int, errorMsg: S
 sealed trait ErrorCodes extends IBMessage
 sealed case class WarningMessage(errorCode: Int, errorMessage: String) extends ErrorCodes
 
+sealed case class MarketDataTypeMsg(reqId: Int, marketDataType: MarketDataType) extends IBMessage 
+
 sealed trait TickField
 object TickField {
   implicit def tickFieldEqual = Equal.equalA[TickField]
@@ -51,6 +53,9 @@ object TickField {
     case 45 ⇒ TickLastTimestamp
     case 48 ⇒ RTVolume
     case 49 ⇒ TickHalted
+    case 50 ⇒ BidYield
+    case 51 ⇒ AskYield
+    case 52 ⇒ LastYield
     case x  ⇒ println("unknown tick field: %d" format x); ???
   }
 }
@@ -78,6 +83,9 @@ object TickOpen extends TickField
 object TickLastTimestamp extends TickField
 object RTVolume extends TickField
 object TickHalted extends TickField
+object BidYield extends TickField
+object AskYield extends TickField
+object LastYield extends TickField
 
 sealed trait BarSize
 object BarSize {
@@ -238,3 +246,19 @@ case object TrailStopLimit extends OrderType
 case object Market extends OrderType
 case object MarketOnClose extends OrderType
 // ... and more
+
+sealed trait MarketDataType
+case object StreamingDataAfterHours extends MarketDataType
+case object FrozenDataAfterHours extends MarketDataType
+object MarketDataType {
+  def code(t: MarketDataType): Int = t match {
+    case StreamingDataAfterHours ⇒ 1
+    case FrozenDataAfterHours    ⇒ 2
+  }
+  def read(code: Int): MarketDataType = code match {
+    case 1 ⇒ StreamingDataAfterHours
+    case 2 ⇒ FrozenDataAfterHours
+    case _ ⇒ ???
+  }
+  implicit val MarketDataTypeEqual = Equal.equalA[MarketDataType]
+}

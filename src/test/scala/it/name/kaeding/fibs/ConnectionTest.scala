@@ -25,14 +25,14 @@ object ConnectionTest extends App {
     val currentTime = ib.currentTime
     println("currentTime: %d" format currentTime.get)
     
-//    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
-//    println("aapl: %s" format aapl.get)
+    val aapl = ib.reqMktDataSnapshot(Stock("AAPL"), "")
+    println("aapl: %s" format aapl.get)
 //    val bby = ib.reqMktDataSnapshot(Stock("BBY"), "")
 //    println("bby: %s" format bby.get)
 //    val aa = ib.reqMktDataSnapshot(Stock("AA"), "")
 //    println("aa: %s" format aa.get)
-    val stp = ib.reqMktDataSnapshot(Stock("STP"), "")
-    println("stp: %s" format stp.get)
+//    val stp = ib.reqMktDataSnapshot(Stock("STP"), "")
+//    println("stp: %s" format stp.get)
     
 //    val periodEnd = new LocalDate("2013-08-08").toDateTimeAtStartOfDay(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/New_York"))).withHourOfDay(10).withMinuteOfHour(30)
 //    val hist = ib.reqHistoricalData(Stock("AAPL"), (periodEnd - 30.minutes), 30.minutes, BarSize1Sec, ShowMeTrades, true)
@@ -60,19 +60,19 @@ object ConnectionTest extends App {
 //    val stpTickStream = ib.reqTickDataStream(Stock("STP"))
 //    stpTickStream.as.map(println).take(25)
 //    stpTickStream.close
+    Thread.sleep(3000)
+    
+//    println("Streaming IMGN bars:")
+//    val imgnBarStream = ib.reqRealTimeBarsFromTrades(Stock("IMGN"), 5, false)
+//    imgnBarStream.as.map(println).take(25)
+//    imgnBarStream.close
 //    Thread.sleep(30000)
-    
-    println("Streaming IMGN bars:")
-    val imgnBarStream = ib.reqRealTimeBarsFromTrades(Stock("IMGN"), 5, false)
-    imgnBarStream.as.map(println).take(25)
-    imgnBarStream.close
-    Thread.sleep(30000)
-    
-    println("Streaming IMGN ticks:")
-    val imgnTickStream = ib.reqTickDataStream(Stock("IMGN"))
-    imgnTickStream.as.map(println).take(25)
-    imgnTickStream.close
-    Thread.sleep(30000)
+//    
+//    println("Streaming IMGN ticks:")
+//    val imgnTickStream = ib.reqTickDataStream(Stock("IMGN"))
+//    imgnTickStream.as.map(println).take(25)
+//    imgnTickStream.close
+//    Thread.sleep(30000)
     
 //    val aaplOrder = LimitOrder(Buy, Stock("AAPL"), 1.50, 100)
 //    ib.placeOrder(aaplOrder)
@@ -99,6 +99,8 @@ object ConnectionTest extends App {
 //    println("getting order status")
 //    ib.reqAllOpenOrders
 //    Thread.sleep(3000)
+  } catch {
+    case e: Exception => e.printStackTrace
   } finally {
     ib.disconnect()
     println("is connected should be false: %s" format ib.isConnected)

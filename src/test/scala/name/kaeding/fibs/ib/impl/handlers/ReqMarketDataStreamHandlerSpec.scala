@@ -32,6 +32,7 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
       "halted makes it through" ! haltedOnlyEx ^
       "singleton data makes it through while waiting for PriceSize pair" ! highBetweenBidEx ^
       "new Ask PriceSize pair comes through" ! newAskEx ^
+      "market data type changing to frozen closes stream" ! frozenMarketDataClosesStreamEx ^
       //      "all data sent through actor makes it into the response" ! allMessagesNoNoiseEx ^
       //      "accept as much data as is given before the end token" ! partialDataSentEx ^
       //      "accept only data with the correct tickerId, ignoring other data" ! noisyPartialDataEx ^
@@ -178,6 +179,23 @@ class ReqMarketDataStreamHandlerSpec extends Specification with ScalaCheck {
           MarketDataResult(sym, None, None, p2.some, s2.some, None, None, h.some, None, None, None, None, None, None, ts))
     
   }
+  
+  def frozenMarketDataClosesStreamEx = prop { (psts: List[(Double, Int, Long)], sym: String, tickerId: Int) ⇒
+    val ibActor = IBActor()
+    val socket = mkSocket
+    val handler = new ReqMarketDataStreamHandler(Stock(sym), ibActor, tickerId, socket)
 
+    ibActor ! RegisterFibsPromise(handler).left
+    val rp = Promise(handler.get)
+    psts.foreach { pst =>
+      val (p, s, t) = pst
+      ibActor ! TickPrice(tickerId, TickLast, p, 0).right
+      ibActor ! TickSize(tickerId, TickLastSize, s).right
+      ibActor ! TickString(tickerId, TickLastTimestamp, t.toString).right
+    }
+    ibActor ! MarketDataTypeMsg(tickerId, FrozenDataAfterHours).right
+    val as = rp.get.as
+    as.length must_== psts.length
+  }
 
 }

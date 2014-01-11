@@ -40,21 +40,21 @@ class ReqMarketDataStreamHandler(security: Stock /*Security*/ ,
       if (last.setPrice(p)) enqueue
     case TickSize(TickerId, TickLastSize, v) ⇒
       if (last.setSize(v)) enqueue
-    case TickString(TickerId, TickLastTimestamp, v) ⇒ 
-      v.parseLong.toOption.foreach(t => if (last.setTime(t)) enqueue)
-    case TickPrice(TickerId, TickHigh, p, _)        ⇒ 
+    case TickString(TickerId, TickLastTimestamp, v) ⇒
+      v.parseLong.toOption.foreach(t ⇒ if (last.setTime(t)) enqueue)
+    case TickPrice(TickerId, TickHigh, p, _) ⇒
       high = p.some
       enqueue
-    case TickPrice(TickerId, TickLow, p, _)         ⇒ 
+    case TickPrice(TickerId, TickLow, p, _) ⇒
       low = p.some
       enqueue
-    case TickPrice(TickerId, TickClose, p, _)       ⇒ 
+    case TickPrice(TickerId, TickClose, p, _) ⇒
       close = p.some
       enqueue
-    case TickPrice(TickerId, TickOpen, p, _)        ⇒ 
+    case TickPrice(TickerId, TickOpen, p, _) ⇒
       open = p.some
       enqueue
-    case TickSize(TickerId, TickVolume, v)          ⇒ 
+    case TickSize(TickerId, TickVolume, v) ⇒
       volume = v.some
       enqueue
     case TickGeneric(TickerId, TickHalted, v) ⇒ {
@@ -64,6 +64,10 @@ class ReqMarketDataStreamHandler(security: Stock /*Security*/ ,
       }
       enqueue
     }
+    case MarketDataTypeMsg(TickerId, FrozenDataAfterHours) ⇒
+      closeStream
+    case MarketDataTypeMsg(TickerId, StreamingDataAfterHours) ⇒ 
+      ()
     case _ ⇒ ???
   }
   val priceHandler: PartialFunction[IBMessage, Unit] = {
@@ -78,11 +82,15 @@ class ReqMarketDataStreamHandler(security: Stock /*Security*/ ,
   val genericHandler: PartialFunction[IBMessage, Unit] = {
     case m@TickGeneric(tickerId, _, _) ⇒ actor ! m
   }
+  val marketDataTypeHandler: PartialFunction[IBMessage, Unit] = {
+    case m@MarketDataTypeMsg(TickerId, _) ⇒ actor ! m
+  }
   val patterns = List(
     priceHandler,
     sizeHandler,
     stringHandler,
-    genericHandler)
+    genericHandler,
+    marketDataTypeHandler)
   private[this] val queue: BlockingQueue[Option[MarketDataResult]] =
     new LinkedBlockingQueue[Option[MarketDataResult]]()
   private[this] def closeStream = {
