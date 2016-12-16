@@ -1,7 +1,7 @@
 package name.kaeding.fibs
 
 import java.net.Socket
-import com.github.nscala_time.time.Imports.{ order ⇒ _, _ }
+//import com.github.nscala_time.time.Imports.{ order ⇒ _, _ }
 import com.ib.client.Contract
 import com.ib.client.ExecutionFilter
 import com.ib.client.{ Order ⇒ IBOrder }
@@ -48,8 +48,8 @@ trait IB {
 
   def reqHistoricalData(
     contract: Stock, // Security,
-    endDateTime: DateTime,
-    durationStr: Period,
+//    endDateTime: DateTime,
+//    durationStr: Period,
     barSize: BarSize,
     whatToShow: ShowMe,
     useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]]

@@ -26,24 +26,24 @@ class LimitOrderSpec extends Specification with ScalaCheck { def is =
   def exAction = prop { (o: LimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, LimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_action must_== o.action.shows
+    ibo.action must_== o.action.shows
   }
 
   def exLimitPrice = prop { (o: LimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, LimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_lmtPrice must_== o.limit
+    ibo.lmtPrice must_== o.limit
   }
   
   def exQuantity = prop { (o: LimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, LimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_totalQuantity must_== o.qty
+    ibo.totalQuantity must_== o.qty
   }
   
   def exOrderType = prop { (o: LimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, LimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_orderType must_== "LMT"
+    ibo.orderType must_== "LMT"
   }
 }

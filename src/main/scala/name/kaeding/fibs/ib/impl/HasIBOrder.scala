@@ -32,15 +32,15 @@ trait HasIBOrderInstances {
     def ibOrder(a: LimitOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
       val orderType: messages.OrderType = Limit
-      ret.m_orderId = orderId
-      ret.m_action = a.action.shows
-      ret.m_auxPrice = 0
-      ret.m_lmtPrice = a.limit
-      ret.m_orderType = orderType.shows
-      ret.m_totalQuantity = a.qty
-      ret.m_goodAfterTime = ""
-      ret.m_goodTillDate = ""
-      ret.m_transmit = true
+//      ret.m_orderId = orderId
+//      ret.m_action = a.action.shows
+//      ret.m_auxPrice = 0
+//      ret.m_lmtPrice = a.limit
+//      ret.m_orderType = orderType.shows
+//      ret.m_totalQuantity = a.qty
+//      ret.m_goodAfterTime = ""
+//      ret.m_goodTillDate = ""
+//      ret.m_transmit = true
       ret
     }
     def fromIB(o: IBOrder, s: Stock) =
@@ -51,19 +51,19 @@ trait HasIBOrderInstances {
     def ibOrder(a: TrailStopLimitOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
       val orderType: messages.OrderType = TrailStopLimit
-      ret.m_orderId = orderId
-      ret.m_action = a.action.shows
-      ret.m_auxPrice = a.trail
-      ret.m_trailStopPrice = a.stop
-      ret.m_lmtPrice = a.action match {
-        case Buy ⇒ a.stop + a.limitOffset
-        case _   ⇒ a.stop - a.limitOffset
-      }
-      ret.m_orderType = orderType.shows
-      ret.m_totalQuantity = a.qty
-      ret.m_goodAfterTime = ""
-      ret.m_goodTillDate = ""
-      ret.m_transmit = true
+//      ret.m_orderId = orderId
+//      ret.m_action = a.action.shows
+//      ret.m_auxPrice = a.trail
+//      ret.m_trailStopPrice = a.stop
+//      ret.m_lmtPrice = a.action match {
+//        case Buy ⇒ a.stop + a.limitOffset
+//        case _   ⇒ a.stop - a.limitOffset
+//      }
+//      ret.m_orderType = orderType.shows
+//      ret.m_totalQuantity = a.qty
+//      ret.m_goodAfterTime = ""
+//      ret.m_goodTillDate = ""
+//      ret.m_transmit = true
       ret
     }
     def fromIB(o: IBOrder, s: Stock) =
@@ -74,12 +74,12 @@ trait HasIBOrderInstances {
     def ibOrder(a: TrailStopOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
       val orderType: messages.OrderType = TrailStop
-      ret.m_orderId = orderId
-      ret.m_action = a.action.shows
-      ret.m_auxPrice = a.trail
-      ret.m_orderType = orderType.shows
-      ret.m_totalQuantity = a.qty
-      ret.m_transmit = true
+//      ret.m_orderId = orderId
+//      ret.m_action = a.action.shows
+//      ret.m_auxPrice = a.trail
+//      ret.m_orderType = orderType.shows
+//      ret.m_totalQuantity = a.qty
+//      ret.m_transmit = true
       ret
     }
     def fromIB(o: IBOrder, s: Stock) =
@@ -90,11 +90,11 @@ trait HasIBOrderInstances {
     def ibOrder(a: MarketOnCloseOrder[Stock], orderId: Int) = {
       val ret = new IBOrder
       val orderType: messages.OrderType = MarketOnClose
-      ret.m_orderId = orderId
-      ret.m_action = a.action.shows
-      ret.m_orderType = orderType.shows
-      ret.m_totalQuantity = a.qty
-      ret.m_transmit = true
+//      ret.m_orderId = orderId
+//      ret.m_action = a.action.shows
+//      ret.m_orderType = orderType.shows
+//      ret.m_totalQuantity = a.qty
+//      ret.m_transmit = true
       ret
     }
     def fromIB(o: IBOrder, s: Stock) =
@@ -110,8 +110,8 @@ trait OCAGroup {
   def ::[S: Contract, A[S] <: FibsOrder[S]](o: A[S])(implicit IBOrder: HasIBOrder[S, A], sconv: S => Stock): OCAGroup = new OCAGroup {
     override def ibOrders(ocaGroupName: String, ocaType: OCAType) = ((id: Int) ⇒ {
         val ibo = IBOrder.ibOrder(o, id)
-        ibo.m_ocaGroup = ocaGroupName
-        ibo.m_ocaType = OCAType.code(ocaType)
+//        ibo.m_ocaGroup = ocaGroupName
+//        ibo.m_ocaType = OCAType.code(ocaType)
         val security: Stock = o.security
         (security, ibo)
       }) :: self.ibOrders(ocaGroupName, ocaType)

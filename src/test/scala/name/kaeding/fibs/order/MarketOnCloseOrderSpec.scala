@@ -25,18 +25,18 @@ class MarketOnCloseOrderSpec extends Specification with ScalaCheck { def is =
   def exAction = prop { (o: MarketOnCloseOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, MarketOnCloseOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_action must_== o.action.shows
+    ibo.action must_== o.action.shows
   }
   
   def exQuantity = prop { (o: MarketOnCloseOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, MarketOnCloseOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_totalQuantity must_== o.qty
+    ibo.totalQuantity must_== o.qty
   }
   
   def exOrderType = prop { (o: MarketOnCloseOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, MarketOnCloseOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_orderType must_== "MOC"
+    ibo.orderType must_== "MOC"
   }
 }

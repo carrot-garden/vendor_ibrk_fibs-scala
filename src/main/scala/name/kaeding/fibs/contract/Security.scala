@@ -9,15 +9,15 @@ case class Stock(
   symbol: String,
   securityId: Option[SecurityId] = none,
   currency: String = "USD") extends Security
-  
+
 object Stock {
   implicit object stockContract extends Contract[Stock] {
-    def contract(s: Stock) = { 
+    def contract(s: Stock) = {
       val ret = new IBContract()
-      ret.m_symbol = s.symbol
-      ret.m_secType = "STK"
-      ret.m_exchange = "SMART"
-      ret.m_currency = "USD"
+      ret.symbol(s.symbol)
+      ret.secType("STK")
+      ret.exchange("SMART")
+      ret.currency("USD")
       ret
     }
   }

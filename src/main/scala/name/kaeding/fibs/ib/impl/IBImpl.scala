@@ -14,7 +14,7 @@ import com.ib.client.ExecutionFilter
 import com.ib.client.{ Order => IBOrder }
 import com.ib.client.ScannerSubscription
 import com.ib.client.EClientSocket
-import com.github.nscala_time.time.Imports.{order => _, _}
+//import com.github.nscala_time.time.Imports.{order => _, _}
 import grizzled.slf4j.Logging
 import name.kaeding.fibs.IB
 import messages._
@@ -63,7 +63,7 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
   val clientIdValue = clientId.getOrElse(IDGenerator.next)
   val ibActor = IBActor()
   val ewrapper = new EWrapperImpl(ibActor)
-  val clientSocket = new EClientSocket(ewrapper)
+  val clientSocket = new EClientSocket(ewrapper, ???) // XXX
   private[this] var orderIdGenerator: Option[AtomicInteger] = None
   private[this] val marketDataTypeVal: AtomicReference[MarketDataType] = new AtomicReference()
   def nextOrderId: Int = orderIdGenerator.map(_.getAndIncrement).getOrElse(-1)
@@ -133,11 +133,11 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     val handler = new ReqMarketDataHandler(security, ibActor, tickerId)
 
     ibActor ! RegisterFibsPromise(handler).left
-    clientSocket.reqMktData(
-      tickerId,
-      security.contract, 
-      genericTickList,
-      true)
+//    clientSocket.reqMktData(
+//      tickerId,
+//      security.contract, 
+//      genericTickList,
+//      true)
     handler.promise
   }
   
@@ -148,11 +148,11 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     val handler = new ReqMarketDataStreamHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
 
     ibActor ! RegisterFibsPromise(handler).left
-    clientSocket.reqMktData(
-      tickerId,
-      security.contract, 
-      genericTickList,
-      false)
+//    clientSocket.reqMktData(
+//      tickerId,
+//      security.contract, 
+//      genericTickList,
+//      false)
     handler.get
   }
   
@@ -163,11 +163,11 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     val handler = new ReqMarketTickDataStreamHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
 
     ibActor ! RegisterFibsPromise(handler).left
-    clientSocket.reqMktData(
-      tickerId,
-      security.contract, 
-      "233",
-      false)
+//    clientSocket.reqMktData(
+//      tickerId,
+//      security.contract, 
+//      "233",
+//      false)
     handler.get
   }
 
@@ -179,8 +179,8 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
   private[this] val historicalDataGovernor = new Governor(10500)
   def reqHistoricalData(
     security: Stock, // Security 
-    endDateTime: DateTime,
-    duration: Period,
+//    endDateTime: DateTime,
+//    duration: Period,
     barSize: BarSize,
     whatToShow: ShowMe,
     useRTH: Boolean): Promise[Stream[HistoricalDataPeriod]] = {
@@ -190,16 +190,16 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
 
     Promise {
       historicalDataGovernor.requestClearance
-      val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss")
-      clientSocket.reqHistoricalData(
-        tickerId,
-        security.contract,
-        fmt.print(endDateTime),
-        duration.shows,
-        barSize.shows,
-        whatToShow.shows,
-        useRTH ? 1 | 0,
-        2)
+//      val fmt = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss")
+//      clientSocket.reqHistoricalData(
+//        tickerId,
+//        security.contract,
+//        fmt.print(endDateTime),
+//        duration.shows,
+//        barSize.shows,
+//        whatToShow.shows,
+//        useRTH ? 1 | 0,
+//        2)
     } >> handler.promise
 
   }
@@ -212,12 +212,12 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     val handler = new ReqRealTimeBarsHandler(security, ibActor, tickerId, EClientSocketLike(clientSocket))
 
     ibActor ! RegisterFibsPromise(handler).left
-    clientSocket.reqRealTimeBars(
-      tickerId,
-      security.contract, 
-      barSize, // this had better be 5
-      "TRADES",
-      useRTH)
+//    clientSocket.reqRealTimeBars(
+//      tickerId,
+//      security.contract, 
+//      barSize, // this had better be 5
+//      "TRADES",
+//      useRTH)
     handler.get
   }
   
@@ -239,8 +239,8 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     val orderId = nextOrderId
     val ibOrder: IBOrder = hasOrder.ibOrder(order, orderId)
     val security: Stock = order.security
-    val contract: Contract = security.contract
-    clientSocket.placeOrder(orderId, contract, ibOrder)
+//    val contract: Contract = security.contract
+//    clientSocket.placeOrder(orderId, contract, ibOrder)
     // TODO: handle openOrder response message
   }
   
@@ -249,8 +249,8 @@ class IBImpl(host: String, port: Int, clientId: Option[Int] = None, marketDataTy
     ocaGroup.ibOrders(ocaName, ocaType)
     ocaGroup.ibOrders(ocaName, ocaType).map(soFn => {
       val orderId = nextOrderId
-      val (security, order) = soFn(orderId)
-      clientSocket.placeOrder(orderId, security.contract, order)    
+//      val (security, order) = soFn(orderId)
+//      clientSocket.placeOrder(orderId, security.contract, order)    
     })
     // TODO: handle openOrder response messages
   }

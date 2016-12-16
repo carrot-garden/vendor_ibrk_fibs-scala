@@ -28,13 +28,13 @@ class TrailStopLimitOrderSpec extends Specification with ScalaCheck { def is =
   def exAction = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_action must_== o.action.shows
+    ibo.action must_== o.action.shows
   }
 
   def exLimitOffset = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_lmtPrice must_== (o.action match {
+    ibo.lmtPrice must_== (o.action match {
       case Buy => o.stop + o.limitOffset
       case _   => o.stop - o.limitOffset
     })
@@ -43,24 +43,24 @@ class TrailStopLimitOrderSpec extends Specification with ScalaCheck { def is =
   def exStopPrice = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_trailStopPrice must_== o.stop
+    ibo.trailStopPrice must_== o.stop
   }
 
   def exTrailAmt = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_auxPrice must_== o.trail
+    ibo.auxPrice must_== o.trail
   }
   
   def exQuantity = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_totalQuantity must_== o.qty
+    ibo.totalQuantity must_== o.qty
   }
   
   def exOrderType = prop { (o: TrailStopLimitOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopLimitOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_orderType must_== "TRAIL LIMIT"
+    ibo.orderType must_== "TRAIL LIMIT"
   }
 }

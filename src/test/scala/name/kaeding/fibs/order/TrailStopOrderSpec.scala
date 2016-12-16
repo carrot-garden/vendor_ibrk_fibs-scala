@@ -26,24 +26,24 @@ class TrailStopOrderSpec extends Specification with ScalaCheck { def is =
   def exAction = prop { (o: TrailStopOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_action must_== o.action.shows
+    ibo.action must_== o.action.shows
   }
 
   def exTrailAmt = prop { (o: TrailStopOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_auxPrice must_== o.trail
+    ibo.auxPrice must_== o.trail
   }
   
   def exQuantity = prop { (o: TrailStopOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_totalQuantity must_== o.qty
+    ibo.totalQuantity must_== o.qty
   }
   
   def exOrderType = prop { (o: TrailStopOrder[Stock], orderId: Int) =>
     val hasIb = implicitly[HasIBOrder[Stock, TrailStopOrder]]
     val ibo: IBOrder = hasIb.ibOrder(o, orderId)
-    ibo.m_orderType must_== "TRAIL"
+    ibo.orderType must_== "TRAIL"
   }
 }
