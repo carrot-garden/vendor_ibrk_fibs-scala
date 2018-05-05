@@ -1,58 +1,89 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.carrotgarden.a</groupId>
 		<artifactId>carrot-a</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
-		<relativePath />
+		<version>0-SNAPSHOT</version>
+		<relativePath>.mvn</relativePath>
 	</parent>
-
 
 	<groupId>com.carrotgarden.test</groupId>
 	<artifactId>vendor_ibrk_fibs-scala</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>0-SNAPSHOT</version>
+
+	<properties>
+
+		<version.scala.epoch>2.11</version.scala.epoch>
+		<version.scala.release>2.11.12</version.scala.release>
+
+		<!-- <version.scala.epoch>2.12</version.scala.epoch> -->
+		<!-- <version.scala.release>2.12.4</version.scala.release> -->
+
+		<version.scalatest>2.2.6</version.scalatest>
+
+	</properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>com.carrotgarden.maven</groupId>
+                <artifactId>scalor-maven-plugin_2.12</artifactId>
+                <configuration>
+                    <zincOptionsScala>
+                        -Xsource:${version.scala.epoch}
+                        -withVersionClasspathValidator:false
+                        -compileorder:Mixed
+                    </zincOptionsScala>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>com.carrotgarden.wrap</groupId>
 			<artifactId>carrot-wrap-ibrk-api</artifactId>
-			<version>2.0.0-SNAPSHOT</version>
+			<version>[0,)</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.nscala-time</groupId>
-			<artifactId>nscala-time_2.11</artifactId>
+			<artifactId>nscala-time_${version.scala.epoch}</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.clapper</groupId>
-			<artifactId>grizzled-slf4j_2.11</artifactId>
+			<artifactId>grizzled-slf4j_${version.scala.epoch}</artifactId>
 			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.scalaz</groupId>
-			<artifactId>scalaz-core_2.11</artifactId>
+			<artifactId>scalaz-core_${version.scala.epoch}</artifactId>
 			<version>7.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scalaz</groupId>
-			<artifactId>scalaz-concurrent_2.11</artifactId>
+			<artifactId>scalaz-concurrent_${version.scala.epoch}</artifactId>
 			<version>7.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scalaz.stream</groupId>
-			<artifactId>scalaz-stream_2.11</artifactId>
+			<artifactId>scalaz-stream_${version.scala.epoch}</artifactId>
 			<version>0.7.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.scala-lang.modules</groupId>
-			<artifactId>scala-swing_${projectScalaVersion}</artifactId>
+			<artifactId>scala-swing_${version.scala.epoch}</artifactId>
 			<version>1.0.2</version>
 		</dependency>
 
@@ -64,20 +95,20 @@
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${projectScalaVersion}</artifactId>
+			<artifactId>scalatest_${version.scala.epoch}</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.scalacheck</groupId>
-			<artifactId>scalacheck_2.11.0-M6</artifactId>
+			<artifactId>scalacheck_${version.scala.epoch}.0-M6</artifactId>
 			<version>1.10.1</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.specs2</groupId>
-			<artifactId>specs2_2.11</artifactId>
+			<artifactId>specs2_${version.scala.epoch}</artifactId>
 			<version>2.4.10</version>
 			<scope>test</scope>
 		</dependency>
